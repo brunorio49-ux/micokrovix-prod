@@ -12,6 +12,10 @@ from services.calculo_frete import calcular_frete
 app = Flask(__name__)
 
 
+def moeda(valor):
+    return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
 def get_db():
     conn = sqlite3.connect("database.db")
     conn.row_factory = sqlite3.Row
@@ -20,6 +24,7 @@ def get_db():
 
 def criar_banco():
     with get_db() as db:
+
         db.execute("""
         CREATE TABLE IF NOT EXISTS usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,12 +33,24 @@ def criar_banco():
         )
         """)
 
+        db.execute("""
+        CREATE TABLE IF NOT EXISTS fretes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            km INTEGER,
+            diesel REAL,
+            pedagio REAL,
+            lucro REAL
+        )
+        """)
+
 
 @app.route("/")
 def login():
     return """
 <h1>Login</h1>
+
 <a href="/register">Registrar</a><br><br>
+
 <a href="/calculadora">Calculadora de Frete</a>
 """
 
@@ -42,12 +59,13 @@ def login():
 def register():
 
     if request.method == "POST":
+
         email = request.form["email"]
         senha = request.form["senha"]
 
         with get_db() as db:
             db.execute(
-                "INSERT INTO usuarios (email, senha) VALUES (?, ?)",
+                "INSERT INTO usuarios (email, senha) VALUES (?,?)",
                 (email, senha)
             )
 
@@ -60,17 +78,32 @@ def register():
 def calculadora():
 
     if request.method == "POST":
+
         km = int(request.form["km"])
 
         resultado = calcular_frete(km)
+
+        with get_db() as db:
+            db.execute(
+                "INSERT INTO fretes (km, diesel, pedagio, lucro) VALUES (?,?,?,?)",
+                (
+                    resultado["km"],
+                    resultado["diesel"],
+                    resultado["pedagio"],
+                    resultado["lucro_estimado"]
+                )
+            )
 
         return f"""
 <h1>Resultado do Frete</h1>
 
 Distância: {resultado['km']} km<br>
-Diesel: R$ {resultado['diesel']}<br>
-Pedágio: R$ {resultado['pedagio']}<br>
-Lucro estimado: R$ {resultado['lucro_estimado']}<br><br>
+
+Diesel: R$ {moeda(resultado['diesel'])}<br>
+
+Pedágio: R$ {moeda(resultado['pedagio'])}<br>
+
+Lucro estimado: R$ {moeda(resultado['lucro_estimado'])}<br><br>
 
 <a href="/calculadora">Calcular novamente</a>
 """
@@ -81,3 +114,4 @@ Lucro estimado: R$ {resultado['lucro_estimado']}<br><br>
 if __name__ == "__main__":
     criar_banco()
     app.run(host="0.0.0.0", port=5000)
+
