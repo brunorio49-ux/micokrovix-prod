@@ -3,7 +3,7 @@ import sqlite3
 import sys
 import os
 
-# permite acessar a pasta services
+# permitir acessar pasta services
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(BASE_DIR)
 
@@ -11,18 +11,31 @@ from services.calculo_frete import calcular_frete
 
 app = Flask(__name__)
 
-# formatação de moeda brasileira
+
+# -------------------------------
+# formatação moeda brasileira
+# -------------------------------
+
 def moeda(valor):
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-# conexão com banco
+
+# -------------------------------
+# conexão banco
+# -------------------------------
+
 def get_db():
     conn = sqlite3.connect("database.db")
     conn.row_factory = sqlite3.Row
     return conn
 
-# criação das tabelas
+
+# -------------------------------
+# criar banco
+# -------------------------------
+
 def criar_banco():
+
     with get_db() as db:
 
         db.execute("""
@@ -43,20 +56,21 @@ def criar_banco():
         )
         """)
 
+
+# -------------------------------
 # página inicial
+# -------------------------------
+
 @app.route("/")
-def login():
-    return """
-<h1>Micokrovix</h1>
+def inicio():
 
-<a href="/register">Registrar</a><br><br>
+    return redirect("/dashboard")
 
-<a href="/calculadora">Calculadora de Frete</a><br><br>
 
-<a href="/historico">Histórico de Fretes</a>
-"""
+# -------------------------------
+# registro
+# -------------------------------
 
-# registro de usuário
 @app.route("/register", methods=["GET", "POST"])
 def register():
 
@@ -67,7 +81,7 @@ def register():
 
         with get_db() as db:
             db.execute(
-                "INSERT INTO usuarios (email, senha) VALUES (?, ?)",
+                "INSERT INTO usuarios (email, senha) VALUES (?,?)",
                 (email, senha)
             )
 
@@ -75,7 +89,11 @@ def register():
 
     return render_template("register.html")
 
-# calculadora de frete
+
+# -------------------------------
+# calculadora
+# -------------------------------
+
 @app.route("/calculadora", methods=["GET", "POST"])
 def calculadora():
 
@@ -86,8 +104,9 @@ def calculadora():
         resultado = calcular_frete(km)
 
         with get_db() as db:
+
             db.execute(
-                "INSERT INTO fretes (km, diesel, pedagio, lucro) VALUES (?, ?, ?, ?)",
+                "INSERT INTO fretes (km, diesel, pedagio, lucro) VALUES (?,?,?,?)",
                 (
                     resultado["km"],
                     resultado["diesel"],
@@ -97,28 +116,35 @@ def calculadora():
             )
 
         return f"""
-<h1>Resultado do Frete</h1>
 
-Distância: {resultado["km"]} km<br>
+        <h1>Resultado do Frete</h1>
 
-Diesel: R$ {moeda(resultado["diesel"])}<br>
+        Distância: {resultado["km"]} km<br><br>
 
-Pedágio: R$ {moeda(resultado["pedagio"])}<br>
+        Diesel: R$ {moeda(resultado["diesel"])}<br>
+        Pedágio: R$ {moeda(resultado["pedagio"])}<br>
+        Lucro estimado: R$ {moeda(resultado["lucro_estimado"])}<br><br>
 
-Lucro estimado: R$ {moeda(resultado["lucro_estimado"])}<br><br>
+        <a href="/calculadora">Calcular novamente</a><br><br>
 
-<a href="/calculadora">Calcular novamente</a><br><br>
+        <a href="/historico">Ver histórico</a><br><br>
 
-<a href="/historico">Ver histórico de fretes</a>
-"""
+        <a href="/dashboard">Ir para dashboard</a>
+
+        """
 
     return render_template("calculadora.html")
 
-# histórico de fretes
+
+# -------------------------------
+# histórico
+# -------------------------------
+
 @app.route("/historico")
 def historico():
 
     with get_db() as db:
+
         fretes = db.execute(
             "SELECT * FROM fretes ORDER BY id DESC"
         ).fetchall()
@@ -129,7 +155,54 @@ def historico():
         moeda=moeda
     )
 
-if __name__ == "__main__":
-    criar_banco()
-    app.run(host="0.0.0.0", port=5000)
 
+# -------------------------------
+# dashboard
+# -------------------------------
+
+@app.route("/dashboard")
+def dashboard():
+
+    with get_db() as db:
+
+        total = db.execute("SELECT COUNT(*) FROM fretes").fetchone()[0]
+
+        diesel_total = db.execute(
+            "SELECT SUM(diesel) FROM fretes"
+        ).fetchone()[0] or 0
+
+        pedagio_total = db.execute(
+            "SELECT SUM(pedagio) FROM fretes"
+        ).fetchone()[0] or 0
+
+        lucro_medio = db.execute(
+            "SELECT AVG(lucro) FROM fretes"
+        ).fetchone()[0] or 0
+
+        fretes = db.execute(
+            "SELECT id, lucro FROM fretes ORDER BY id"
+        ).fetchall()
+
+    labels = [f"Frete {f['id']}" for f in fretes]
+    valores = [f["lucro"] for f in fretes]
+
+    return render_template(
+        "dashboard.html",
+        total_fretes=total,
+        diesel_total=moeda(diesel_total),
+        pedagio_total=moeda(pedagio_total),
+        lucro_medio=moeda(lucro_medio),
+        labels=labels,
+        valores=valores
+    )
+
+
+# -------------------------------
+# iniciar app
+# -------------------------------
+
+if __name__ == "__main__":
+
+    criar_banco()
+
+    app.run(host="0.0.0.0", port=5000)

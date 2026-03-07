@@ -1,24 +1,136 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>Micokrovix</title>
+
+<title>Micokrovix Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+font-family: Arial;
+background:#f2f2f2;
+margin:40px;
+}
+
+h1{
+text-align:center;
+}
+
+.container{
+display:flex;
+flex-wrap:wrap;
+gap:20px;
+justify-content:center;
+margin-top:30px;
+}
+
+.card{
+background:white;
+padding:20px;
+width:220px;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+text-align:center;
+}
+
+.valor{
+font-size:22px;
+font-weight:bold;
+margin-top:10px;
+}
+
+.links{
+text-align:center;
+margin-top:40px;
+}
+
+a{
+text-decoration:none;
+color:#3366cc;
+font-weight:bold;
+}
+
+.grafico{
+width:600px;
+margin:60px auto;
+}
+
+</style>
+
 </head>
 
 <body>
 
-<h1>Bem-vindo ao Micokrovix, Bruno 👋</h1>
+<h1>🚛 Micokrovix</h1>
 
-<p>Seu copiloto inteligente de fretes.</p>
+<div class="container">
 
-<h2>Como posso facilitar sua vida hoje?</h2>
+<div class="card">
+Fretes calculados
+<div class="valor">{{ total_fretes }}</div>
+</div>
 
-<ul>
-<li>📊 Calcular lucro de um frete</li>
-<li>🚚 Planejar uma viagem</li>
-<li>💰 Ver estimativa de ganhos</li>
-<li>🧠 Analisar uma rota</li>
-</ul>
+<div class="card">
+Diesel total
+<div class="valor">R$ {{ diesel_total }}</div>
+</div>
+
+<div class="card">
+Pedágio total
+<div class="valor">R$ {{ pedagio_total }}</div>
+</div>
+
+<div class="card">
+Lucro médio
+<div class="valor">R$ {{ lucro_medio }}</div>
+</div>
+
+</div>
+
+<div class="grafico">
+
+<canvas id="graficoLucro"></canvas>
+
+</div>
+
+<div class="links">
+
+<a href="/calculadora">Nova simulação</a>
+
+<br><br>
+
+<a href="/historico">Ver histórico</a>
+
+</div>
+
+<script>
+
+const ctx = document.getElementById('graficoLucro');
+
+new Chart(ctx, {
+type: 'bar',
+data: {
+labels: {{ labels|safe }},
+datasets: [{
+label: 'Lucro por Frete',
+data: {{ valores|safe }},
+borderWidth: 1
+}]
+},
+options: {
+scales: {
+y: {
+beginAtZero: true
+}
+}
+}
+});
+
+</script>
 
 </body>
-</html>
 
+</html>
