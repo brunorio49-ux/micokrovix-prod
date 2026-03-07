@@ -11,17 +11,17 @@ from services.calculo_frete import calcular_frete
 
 app = Flask(__name__)
 
-
+# formatação de moeda brasileira
 def moeda(valor):
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-
+# conexão com banco
 def get_db():
     conn = sqlite3.connect("database.db")
     conn.row_factory = sqlite3.Row
     return conn
 
-
+# criação das tabelas
 def criar_banco():
     with get_db() as db:
 
@@ -43,18 +43,20 @@ def criar_banco():
         )
         """)
 
-
+# página inicial
 @app.route("/")
 def login():
     return """
-<h1>Login</h1>
+<h1>Micokrovix</h1>
 
 <a href="/register">Registrar</a><br><br>
 
-<a href="/calculadora">Calculadora de Frete</a>
+<a href="/calculadora">Calculadora de Frete</a><br><br>
+
+<a href="/historico">Histórico de Fretes</a>
 """
 
-
+# registro de usuário
 @app.route("/register", methods=["GET", "POST"])
 def register():
 
@@ -65,7 +67,7 @@ def register():
 
         with get_db() as db:
             db.execute(
-                "INSERT INTO usuarios (email, senha) VALUES (?,?)",
+                "INSERT INTO usuarios (email, senha) VALUES (?, ?)",
                 (email, senha)
             )
 
@@ -73,7 +75,7 @@ def register():
 
     return render_template("register.html")
 
-
+# calculadora de frete
 @app.route("/calculadora", methods=["GET", "POST"])
 def calculadora():
 
@@ -85,7 +87,7 @@ def calculadora():
 
         with get_db() as db:
             db.execute(
-                "INSERT INTO fretes (km, diesel, pedagio, lucro) VALUES (?,?,?,?)",
+                "INSERT INTO fretes (km, diesel, pedagio, lucro) VALUES (?, ?, ?, ?)",
                 (
                     resultado["km"],
                     resultado["diesel"],
@@ -97,19 +99,35 @@ def calculadora():
         return f"""
 <h1>Resultado do Frete</h1>
 
-Distância: {resultado['km']} km<br>
+Distância: {resultado["km"]} km<br>
 
-Diesel: R$ {moeda(resultado['diesel'])}<br>
+Diesel: R$ {moeda(resultado["diesel"])}<br>
 
-Pedágio: R$ {moeda(resultado['pedagio'])}<br>
+Pedágio: R$ {moeda(resultado["pedagio"])}<br>
 
-Lucro estimado: R$ {moeda(resultado['lucro_estimado'])}<br><br>
+Lucro estimado: R$ {moeda(resultado["lucro_estimado"])}<br><br>
 
-<a href="/calculadora">Calcular novamente</a>
+<a href="/calculadora">Calcular novamente</a><br><br>
+
+<a href="/historico">Ver histórico de fretes</a>
 """
 
     return render_template("calculadora.html")
 
+# histórico de fretes
+@app.route("/historico")
+def historico():
+
+    with get_db() as db:
+        fretes = db.execute(
+            "SELECT * FROM fretes ORDER BY id DESC"
+        ).fetchall()
+
+    return render_template(
+        "historico.html",
+        fretes=fretes,
+        moeda=moeda
+    )
 
 if __name__ == "__main__":
     criar_banco()

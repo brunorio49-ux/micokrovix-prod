@@ -1,0 +1,35 @@
+<h1>Histórico de Fretes</h1>
+
+<table border="1">
+
+<tr>
+<th>ID</th>
+<th>KM</th>
+<th>Diesel</th>
+<th>Pedágio</th>
+<th>Lucro</th>
+</tr>
+
+{% for frete in fretes %}
+
+<tr>
+
+<td>{{ frete.id }}</td>
+
+<td>{{ frete.km }}</td>
+
+<td>R$ {{ moeda(frete.diesel) }}</td>
+
+<td>R$ {{ moeda(frete.pedagio) }}</td>
+
+<td>R$ {{ moeda(frete.lucro) }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+<br>
+
+<a href="/calculadora">Voltar para calculadora</a>
