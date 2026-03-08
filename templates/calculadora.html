@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Micokrovix - Calculadora de Frete</title>
+    <title>Calculadora de Frete</title>
 </head>
-
 <body>
 
 <h1>Calculadora de Frete</h1>
@@ -11,24 +10,19 @@
 <form method="POST">
 
 <label>Distância da rota (km)</label><br>
-<input type="number" name="km" required>
-<br><br>
+<input type="number" name="km" required><br><br>
 
 <label>Valor do frete (R$)</label><br>
-<input type="number" step="0.01" name="valor_frete" required>
-<br><br>
+<input type="number" name="valor_frete" step="0.01" required><br><br>
 
 <label>Consumo do caminhão (km por litro)</label><br>
-<input type="number" step="0.1" name="consumo" required>
-<br><br>
+<input type="number" name="consumo" step="0.01" required><br><br>
 
 <label>Preço do diesel (R$)</label><br>
-<input type="number" step="0.01" name="preco_combustivel" required>
-<br><br>
+<input type="number" name="preco_combustivel" step="0.01" required><br><br>
 
-<label>Pedágio total da viagem (R$)</label><br>
-<input type="number" step="0.01" name="pedagio" required>
-<br><br>
+<label>Pedágio total (R$)</label><br>
+<input type="number" name="pedagio" step="0.01" required><br><br>
 
 <button type="submit">Calcular</button>
 
