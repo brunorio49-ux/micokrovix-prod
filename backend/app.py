@@ -4,6 +4,9 @@ app = Flask(__name__)
 
 def calcular_frete(distancia, valor_frete, consumo, preco_combustivel, pedagio):
 
+    if consumo == 0:
+        consumo = 1
+
     litros = distancia / consumo
     custo_combustivel = litros * preco_combustivel
 
@@ -17,20 +20,22 @@ def calcular_frete(distancia, valor_frete, consumo, preco_combustivel, pedagio):
         "lucro": round(lucro, 2)
     }
 
+
 @app.route("/")
 def inicio():
     return redirect("/calculadora")
+
 
 @app.route("/calculadora", methods=["GET", "POST"])
 def calculadora():
 
     if request.method == "POST":
 
-        km = float(request.form["km"])
-        valor_frete = float(request.form["valor_frete"])
-        consumo = float(request.form["consumo"])
-        preco_combustivel = float(request.form["preco_combustivel"])
-        pedagio = float(request.form["pedagio"])
+        km = float(request.form.get("km", 0))
+        valor_frete = float(request.form.get("valor_frete", 0))
+        consumo = float(request.form.get("consumo", 0))
+        preco_combustivel = float(request.form.get("preco_combustivel", 0))
+        pedagio = float(request.form.get("pedagio", 0))
 
         resultado = calcular_frete(
             km,
