@@ -21,7 +21,7 @@ def calcular_frete(distancia, valor_frete, consumo, preco_combustivel, pedagio):
 def inicio():
     return redirect("/calculadora")
 
-@app.route("/calculadora", methods=["GET","POST"])
+@app.route("/calculadora", methods=["GET", "POST"])
 def calculadora():
 
     if request.method == "POST":
@@ -51,11 +51,11 @@ def calculadora():
         <b>Lucro estimado: R$ {resultado["lucro"]}</b>
 
         <br><br>
-
         <a href="/calculadora">Calcular novamente</a>
         """
 
     return render_template("calculadora.html")
+
 
 if __name__ == "__main__":
     app.run()
