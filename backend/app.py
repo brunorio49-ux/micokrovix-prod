@@ -1,13 +1,6 @@
 from flask import Flask, render_template, request, redirect
-import sqlite3
 
 app = Flask(__name__)
-
-def get_db():
-    conn = sqlite3.connect("database.db")
-    conn.row_factory = sqlite3.Row
-    return conn
-
 
 def calcular_frete(distancia, valor_frete, consumo, preco_combustivel, pedagio):
 
@@ -19,16 +12,14 @@ def calcular_frete(distancia, valor_frete, consumo, preco_combustivel, pedagio):
 
     return {
         "distancia": distancia,
-        "combustivel": round(custo_combustivel,2),
+        "combustivel": round(custo_combustivel, 2),
         "pedagio": pedagio,
-        "lucro": round(lucro,2)
+        "lucro": round(lucro, 2)
     }
-
 
 @app.route("/")
 def inicio():
     return redirect("/calculadora")
-
 
 @app.route("/calculadora", methods=["GET","POST"])
 def calculadora():
@@ -52,12 +43,12 @@ def calculadora():
         return f"""
         <h1>Resultado do Frete</h1>
 
-        Distância: {resultado['distancia']} km<br><br>
+        Distância: {resultado["distancia"]} km<br><br>
 
-        Combustível: R$ {resultado['combustivel']}<br>
-        Pedágio: R$ {resultado['pedagio']}<br><br>
+        Combustível: R$ {resultado["combustivel"]}<br>
+        Pedágio: R$ {resultado["pedagio"]}<br><br>
 
-        <b>Lucro estimado: R$ {resultado['lucro']}</b>
+        <b>Lucro estimado: R$ {resultado["lucro"]}</b>
 
         <br><br>
 
@@ -66,6 +57,5 @@ def calculadora():
 
     return render_template("calculadora.html")
 
-
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
