@@ -23,7 +23,7 @@ def calcular_frete(distancia, valor_frete, consumo, preco_combustivel, pedagio):
 
 @app.route("/")
 def inicio():
-    return redirect("/calculadora")
+    return render_template("dashboard.html")
 
 
 @app.route("/calculadora", methods=["GET", "POST"])
