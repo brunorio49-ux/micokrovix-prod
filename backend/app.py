@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect
-
+import sqlite3
 app = Flask(__name__)
 
 def calcular_frete(distancia, valor_frete, consumo, preco_combustivel, pedagio):
