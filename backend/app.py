@@ -79,4 +79,5 @@ def calculadora():
 
 
 if __name__ == "__main__":
-    app.run()
+    criar_banco()
+    app.run(host="0.0.0.0", port=5000)
