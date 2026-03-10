@@ -11,7 +11,19 @@
 <form method="POST">
 
 <label>Distância da rota (km)</label><br>
-<input type="number" name="km"><br><br>
+<input type="number" step="0.1" name="km" required><br><br>
+
+<label>Valor do frete (R$)</label><br>
+<input type="number" step="0.01" name="valor_frete" required><br><br>
+
+<label>Consumo do veículo (km por litro)</label><br>
+<input type="number" step="0.1" name="consumo" required><br><br>
+
+<label>Preço do combustível (R$)</label><br>
+<input type="number" step="0.01" name="preco_combustivel" required><br><br>
+
+<label>Pedágio total (R$)</label><br>
+<input type="number" step="0.01" name="pedagio" value="0"><br><br>
 
 <button type="submit">Calcular</button>
 
