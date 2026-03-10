@@ -1,7 +1,23 @@
 from flask import Flask, render_template, request, redirect
 import sqlite3
 app = Flask(__name__)
+def criar_banco():
 
+    conn = sqlite3.connect("fretes.db")
+
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS fretes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        distancia REAL,
+        valor_frete REAL,
+        combustivel REAL,
+        pedagio REAL,
+        lucro REAL
+    )
+    """)
+
+    conn.commit()
+    conn.close()
 def calcular_frete(distancia, valor_frete, consumo, preco_combustivel, pedagio):
 
     if consumo == 0:
