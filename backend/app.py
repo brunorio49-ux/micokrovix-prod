@@ -60,8 +60,14 @@ def calculadora():
             preco_combustivel,
             pedagio
         )
-
-        return f"""
+if resultado["lucro"] < 500:
+    status = "❌ Frete ruim — não compensa"
+elif resultado["lucro"] < 1500:
+    status = "⚠️ Frete médio — avaliar retorno"
+else:
+    status = "✔ Frete bom — vale a pena"
+     
+    return f"""
         <h1>Resultado do Frete</h1>
 
         Distância: {resultado["distancia"]} km<br><br>
@@ -70,7 +76,8 @@ def calculadora():
         Pedágio: R$ {resultado["pedagio"]}<br><br>
 
         <b>Lucro estimado: R$ {resultado["lucro"]}</b>
-
+<br><br>
+<h2>{status}</h2>
         <br><br>
         <a href="/calculadora">Calcular novamente</a>
         """
