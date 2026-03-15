@@ -92,7 +92,7 @@ def calculadora():
 <br><br>
 <a href="/calculadora">Calcular novamente</a>
 """ 
-return render_template("calculadora.html")
+
 if __name__ == "__main__":
     criar_banco()
 
