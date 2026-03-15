@@ -1,46 +1,42 @@
-  🌍 Micokrovix
-  
-Cada quilômetro é tempo da sua vida.
+ # 🌍 Micokrovix
 
-🚚 Sobre o Micokrovix
+> Cada quilômetro é tempo da sua vida
 
-O Micokrovix nasceu da estrada, da convivência com caminhoneiros e profissionais do transporte. Uma realidade se repetia: a dificuldade de saber se um frete realmente vale a pena.
-Muitos motoristas aceitam fretes sem calcular todos os custos — combustível, pedágios, desgaste do veículo, alimentação. O resultado? Um frete aparentemente bom pode virar prejuízo.
-O Micokrovix surge para trazer clareza. Uma ferramenta simples que ajuda profissionais da estrada a tomarem decisões conscientes antes de aceitar um frete.
+![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
+![Licença](https://img.shields.io/badge/licença-MIT-blue)
+![Build](https://img.shields.io/badge/build-passing-brightgreen)
 
-🎯 Missão, Visão e Valores
+## 🚚 Sobre o projeto
+O **Micokrovix** nasceu da convivência com profissionais do transporte e da necessidade de clareza na tomada de decisão sobre fretes. Muitos motoristas aceitam viagens sem calcular todos os custos envolvidos — combustível, pedágios, desgaste do veículo, alimentação. O resultado pode ser prejuízo.  
+O Micokrovix é uma ferramenta simples e objetiva para ajudar caminhoneiros e transportadoras a avaliarem a viabilidade de cada frete antes de aceitá-lo.
 
-- Missão: Ajudar profissionais do transporte a entenderem o custo real de cada viagem e tomarem decisões mais inteligentes.
-- Visão: Construir uma plataforma global de inteligência para transporte, apoiando motoristas e transportadores a planejar fretes e rotas de forma eficiente.
-- Valores:
-- Clareza e transparência nas informações
-- Respeito à realidade da estrada
-- Simplicidade nas ferramentas
-- Evolução constante do sistema
-- Compromisso com a comunidade do transporte
+## 🎯 Missão, Visão e Valores
+- **Missão:** Ajudar profissionais do transporte a entenderem o custo real de cada viagem e tomarem decisões inteligentes.  
+- **Visão:** Construir uma plataforma global de inteligência para transporte, apoiando motoristas e transportadores.  
+- **Valores:** Clareza, transparência, simplicidade, evolução constante e compromisso com a comunidade.  
 
-⚙️ Funcionalidades atuais
-- Calculadora de frete
-- Cálculo de custo de diesel
-- Cálculo de pedágio
-- Estimativa de lucro
+## ⚙️ Funcionalidades
+- Calculadora de frete  
+- Cálculo de custo de diesel  
+- Cálculo de pedágio  
+- Estimativa de lucro  
 
-🛠️ Tecnologias usadas
-- Python
-- Flask
-- SQLite
-- HTML
+## 🛠️ Tecnologias utilizadas
+- **Backend:** Python + Flask  
+- **Banco de dados:** SQLite  
+- **Frontend:** HTML  
 
-🌱 Filosofia da Semente
-O Micokrovix é como uma semente. Pequeno no início, mas com potencial de crescer e ajudar milhares de profissionais da estrada ao redor do mundo.
-Cada quilômetro rodado representa tempo de vida. Nosso objetivo é ajudar caminhoneiros a protegerem esse tempo, tomando decisões melhores e mais conscientes.
+## 🚀 Instalação e uso
+```bash
+# Clone o repositório
+git clone https://github.com/brunorio49-ux/micokrovix-prod.git
 
-📌 Status do Projeto
-Em desenvolvimento.
-Aberto a contribuições e ideias para crescer junto com a comunidade.
+# Acesse a pasta
+cd micokrovix-prod
 
-👤 Fundador e Idealizador
-Bruno Vieira Alexandre
-O cultivador do Micokrovix
-                                              
-Projeto em desenvolvimento.
+# Instale as dependências
+pip install -r requirements.txt
+
+# Execute a aplicação
+python app.py
+
