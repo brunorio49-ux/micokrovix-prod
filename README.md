@@ -1,11 +1,15 @@
   🌍 Micokrovix
+  
 Cada quilômetro é tempo da sua vida.
+
 🚚 Sobre o Micokrovix
+
 O Micokrovix nasceu da estrada, da convivência com caminhoneiros e profissionais do transporte. Uma realidade se repetia: a dificuldade de saber se um frete realmente vale a pena.
 Muitos motoristas aceitam fretes sem calcular todos os custos — combustível, pedágios, desgaste do veículo, alimentação. O resultado? Um frete aparentemente bom pode virar prejuízo.
 O Micokrovix surge para trazer clareza. Uma ferramenta simples que ajuda profissionais da estrada a tomarem decisões conscientes antes de aceitar um frete.
 
 🎯 Missão, Visão e Valores
+
 - Missão: Ajudar profissionais do transporte a entenderem o custo real de cada viagem e tomarem decisões mais inteligentes.
 - Visão: Construir uma plataforma global de inteligência para transporte, apoiando motoristas e transportadores a planejar fretes e rotas de forma eficiente.
 - Valores:
