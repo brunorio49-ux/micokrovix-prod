@@ -91,4 +91,12 @@ def calculadora():
 <h2>{status}</h2>
 <br><br>
 <a href="/calculadora">Calcular novamente</a>
-"""
+""" 
+return render_template("calculadora.html")
+if __name__ == "__main__":
+    criar_banco()
+
+    import os
+    port = int(os.environ.get("PORT", 10000))
+
+    app.run(host="0.0.0.0", port=port)
