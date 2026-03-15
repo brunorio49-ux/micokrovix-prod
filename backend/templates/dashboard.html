@@ -1,136 +1,83 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="pt-br">
 <head>
+    <meta charset="UTF-8">
+    <title>Micokrovix Dashboard</title>
 
-<title>Micokrovix Dashboard</title>
+    <!-- CSS PROFISSIONAL -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-
-body{
-font-family: Arial;
-background:#f2f2f2;
-margin:40px;
-}
-
-h1{
-text-align:center;
-}
-
-.container{
-display:flex;
-flex-wrap:wrap;
-gap:20px;
-justify-content:center;
-margin-top:30px;
-}
-
-.card{
-background:white;
-padding:20px;
-width:220px;
-border-radius:10px;
-box-shadow:0 0 10px rgba(0,0,0,0.1);
-text-align:center;
-}
-
-.valor{
-font-size:22px;
-font-weight:bold;
-margin-top:10px;
-}
-
-.links{
-text-align:center;
-margin-top:40px;
-}
-
-a{
-text-decoration:none;
-color:#3366cc;
-font-weight:bold;
-}
-
-.grafico{
-width:600px;
-margin:60px auto;
-}
-
-</style>
-
+    <!-- Gráfico -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
-<h1>🚛 Micokrovix</h1>
-
 <div class="container">
 
-<div class="card">
-Fretes calculados
-<div class="valor">{{ total_fretes }}</div>
-</div>
+    <h1>🚛 Micokrovix</h1>
 
-<div class="card">
-Diesel total
-<div class="valor">R$ {{ diesel_total }}</div>
-</div>
+    <div class="task-form" style="justify-content: center;">
+        <strong>Painel de controle</strong>
+    </div>
 
-<div class="card">
-Pedágio total
-<div class="valor">R$ {{ pedagio_total }}</div>
-</div>
+    <div class="task-list">
 
-<div class="card">
-Lucro médio
-<div class="valor">R$ {{ lucro_medio }}</div>
-</div>
+        <div class="task-item">
+            <span class="task-info">Fretes calculados</span>
+            <strong>{{ total_fretes }}</strong>
+        </div>
 
-</div>
+        <div class="task-item">
+            <span class="task-info">Diesel total</span>
+            <strong>R$ {{ diesel_total }}</strong>
+        </div>
 
-<div class="grafico">
+        <div class="task-item">
+            <span class="task-info">Pedágio total</span>
+            <strong>R$ {{ pedagio_total }}</strong>
+        </div>
 
-<canvas id="graficoLucro"></canvas>
+        <div class="task-item">
+            <span class="task-info">Lucro médio</span>
+            <strong>R$ {{ lucro_medio }}</strong>
+        </div>
 
-</div>
+    </div>
 
-<div class="links">
+    <h3 style="margin-top: 2rem;">📊 Lucro por Frete</h3>
 
-<a href="/calculadora">Nova simulação</a>
+    <canvas id="graficoLucro"></canvas>
 
-<br><br>
-
-<a href="/historico">Ver histórico</a>
+    <div style="margin-top: 2rem; text-align:center;">
+        <a href="/calculadora" class="logout-link">Nova simulação</a><br><br>
+        <a href="/historico" class="logout-link">Ver histórico</a>
+    </div>
 
 </div>
 
 <script>
-
 const ctx = document.getElementById('graficoLucro');
 
 new Chart(ctx, {
-type: 'bar',
-data: {
-labels: {{ labels|safe }},
-datasets: [{
-label: 'Lucro por Frete',
-data: {{ valores|safe }},
-borderWidth: 1
-}]
-},
-options: {
-scales: {
-y: {
-beginAtZero: true
-}
-}
-}
+    type: 'bar',
+    data: {
+        labels: {{ labels|safe }},
+        datasets: [{
+            label: 'Lucro por Frete',
+            data: {{ valores|safe }},
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
 });
-
 </script>
 
 </body>
-
 </html>
