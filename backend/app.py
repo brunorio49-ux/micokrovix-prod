@@ -1,8 +1,12 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request
 import sqlite3
-app = Flask(__name__)
-def criar_banco():
 
+app = Flask(__name__)
+
+# =========================
+# BANCO DE DADOS
+# =========================
+def criar_banco():
     conn = sqlite3.connect("/tmp/fretes.db")
 
     conn.execute("""
@@ -18,6 +22,10 @@ def criar_banco():
 
     conn.commit()
     conn.close()
+
+# =========================
+# CÁLCULO DO FRETE
+# =========================
 def calcular_frete(distancia, valor_frete, consumo, preco_combustivel, pedagio):
 
     if consumo == 0:
@@ -36,11 +44,12 @@ def calcular_frete(distancia, valor_frete, consumo, preco_combustivel, pedagio):
         "lucro": round(lucro, 2)
     }
 
-
+# =========================
+# ROTAS
+# =========================
 @app.route("/")
 def inicio():
     return render_template("dashboard.html")
-
 
 @app.route("/calculadora", methods=["GET", "POST"])
 def calculadora():
@@ -60,14 +69,16 @@ def calculadora():
             preco_combustivel,
             pedagio
         )
-if resultado["lucro"] < 500:
-    status = "❌ Frete ruim — não compensa"
-elif resultado["lucro"] < 1500:
-    status = "⚠️ Frete médio — avaliar retorno"
-else:
-    status = "✔ Frete bom — vale a pena"
-     
-    return f"""
+
+        # STATUS DO FRETE
+        if resultado["lucro"] < 500:
+            status = "❌ Frete ruim — não compensa"
+        elif resultado["lucro"] < 1500:
+            status = "⚠️ Frete médio — avaliar retorno"
+        else:
+            status = "✔ Frete bom — vale a pena"
+
+        return f"""
         <h1>Resultado do Frete</h1>
 
         Distância: {resultado["distancia"]} km<br><br>
@@ -75,16 +86,9 @@ else:
         Combustível: R$ {resultado["combustivel"]}<br>
         Pedágio: R$ {resultado["pedagio"]}<br><br>
 
-        <b>Lucro estimado: R$ {resultado["lucro"]}</b>
+<b>Lucro estimado: R$ {resultado["lucro"]}</b>
 <br><br>
 <h2>{status}</h2>
-        <br><br>
-        <a href="/calculadora">Calcular novamente</a>
-        """
-
-    return render_template("calculadora.html")
-
-
-if __name__ == "__main__":
-    criar_banco()
-    app.run(host="0.0.0.0", port=5000)
+<br><br>
+<a href="/calculadora">Calcular novamente</a>
+"""
