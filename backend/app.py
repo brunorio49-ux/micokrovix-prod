@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 import sqlite3
+import os
 
 app = Flask(__name__)
 
@@ -45,58 +46,26 @@ def calcular_frete(distancia, valor_frete, consumo, preco_combustivel, pedagio):
     }
 
 # =========================
-# ROTAS
+# ROTA DASHBOARD (CORRIGIDA)
 # =========================
 @app.route("/")
 def inicio():
-    return render_template("dashboard.html")
+    return render_template(
+        "dashboard.html",
+        total_fretes=0,
+        diesel_total=0,
+        pedagio_total=0,
+        lucro_medio=0,
+        labels=[],
+        valores=[]
+    )
 
+# =========================
+# CALCULADORA (CORRIGIDA)
+# =========================
 @app.route("/calculadora", methods=["GET", "POST"])
 def calculadora():
 
     if request.method == "POST":
 
-        km = float(request.form.get("km", 0))
-        valor_frete = float(request.form.get("valor_frete", 0))
-        consumo = float(request.form.get("consumo", 0))
-        preco_combustivel = float(request.form.get("preco_combustivel", 0))
-        pedagio = float(request.form.get("pedagio", 0))
-
-        resultado = calcular_frete(
-            km,
-            valor_frete,
-            consumo,
-            preco_combustivel,
-            pedagio
-        )
-
-        # STATUS DO FRETE
-        if resultado["lucro"] < 500:
-            status = "❌ Frete ruim — não compensa"
-        elif resultado["lucro"] < 1500:
-            status = "⚠️ Frete médio — avaliar retorno"
-        else:
-            status = "✔ Frete bom — vale a pena"
-
-        return f"""
-        <h1>Resultado do Frete</h1>
-
-        Distância: {resultado["distancia"]} km<br><br>
-
-        Combustível: R$ {resultado["combustivel"]}<br>
-        Pedágio: R$ {resultado["pedagio"]}<br><br>
-
-<b>Lucro estimado: R$ {resultado["lucro"]}</b>
-<br><br>
-<h2>{status}</h2>
-<br><br>
-<a href="/calculadora">Calcular novamente</a>
-""" 
-
-if __name__ == "__main__":
-    criar_banco()
-
-    import os
-    port = int(os.environ.get("PORT", 10000))
-
-    app.run(host="0.0.0.0", port=port)
+        km = float(request
