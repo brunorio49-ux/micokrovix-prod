@@ -40,3 +40,21 @@ pip install -r requirements.txt
 # Execute a aplicação
 python app.py
 
+Acesse em: http://localhost:5000
+
+📌 Status do projeto
+Em desenvolvimento. Aberto a contribuições e ideias para crescer junto com a comunidade.
+
+🤝 Como contribuir
+Faça um fork do projeto
+
+Crie uma branch para sua feature (git checkout -b minha-feature)
+
+Commit suas alterações (git commit -m 'Adicionei minha feature')
+
+Faça push para a branch (git push origin minha-feature)
+
+Abra um Pull Request
+
+👤 Autor
+Bruno Vieira Alexandre — Fundador e idealizador do Micokrovix
