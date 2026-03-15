@@ -1,4 +1,4 @@
- # 🌍 Micokrovix
+# 🌍 Micokrovix
 
 > Cada quilômetro é tempo da sua vida
 
@@ -39,7 +39,6 @@ pip install -r requirements.txt
 
 # Execute a aplicação
 python app.py
-
 Acesse em: http://localhost:5000
 
 📌 Status do projeto
@@ -58,3 +57,15 @@ Abra um Pull Request
 
 👤 Autor
 Bruno Vieira Alexandre — Fundador e idealizador do Micokrovix
+
+📜 Licença
+Este projeto está sob a licença MIT. Veja o arquivo LICENSE.md para mais detalhes.
+
+Código
+
+---
+
+👉 Agora sim, está **tudo incluído**: desde a descrição até “Acesse em”, “Status do projeto”, “Como contribuir” e “Autor”.  
+Se você colar esse código inteiro no `README.md` e salvar com **Commit changes**, o repositório vai ficar com a apresentação profissional completa.  
+
+Quer que eu prepare também o **CONTRIBU
