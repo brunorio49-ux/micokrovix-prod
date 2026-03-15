@@ -3,7 +3,7 @@ import sqlite3
 app = Flask(__name__)
 def criar_banco():
 
-    conn = sqlite3.connect("fretes.db")
+    conn = sqlite3.connect("/tmp/fretes.db")
 
     conn.execute("""
     CREATE TABLE IF NOT EXISTS fretes (
