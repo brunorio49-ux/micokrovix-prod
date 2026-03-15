@@ -68,4 +68,40 @@ def calculadora():
 
     if request.method == "POST":
 
-        km = float(request
+        km = float(request.form.get("km", 0))
+        valor_frete = float(request.form.get("valor_frete", 0))
+        consumo = float(request.form.get("consumo", 0))
+        preco_combustivel = float(request.form.get("preco_combustivel", 0))
+        pedagio = float(request.form.get("pedagio", 0))
+
+        resultado = calcular_frete(
+            km,
+            valor_frete,
+            consumo,
+            preco_combustivel,
+            pedagio
+        )
+
+        # STATUS DO FRETE
+        if resultado["lucro"] < 500:
+            status = "❌ Frete ruim — não compensa"
+        elif resultado["lucro"] < 1500:
+            status = "⚠️ Frete médio — avaliar retorno"
+        else:
+            status = "✔ Frete bom — vale a pena"
+
+        return render_template(
+            "resultado.html",
+            resultado=resultado,
+            status=status
+        )
+
+    return render_template("calculadora.html")
+
+# =========================
+# INICIALIZAÇÃO
+# =========================
+if __name__ == "__main__":
+    criar_banco()
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
