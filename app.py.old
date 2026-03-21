@@ -1,0 +1,76 @@
+from flask import Flask, render_template, request, jsonify
+import sqlite3
+from datetime import datetime
+import random
+
+app = Flask(__name__)
+
+def init_db():
+    conn = sqlite3.connect('viagens.db')
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS viagens
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  origem TEXT, destino TEXT, distancia REAL,
+                  combustivel REAL, pedagio REAL, manutencao REAL,
+                  receita REAL, lucro REAL, margem REAL, data TIMESTAMP)''')
+    conn.commit()
+    conn.close()
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/calcular', methods=['POST'])
+def calcular():
+    data = request.json
+    origem = data.get('origem', '')
+    destino = data.get('destino', '')
+    receita = float(data.get('receita', 0))
+    preco_comb = float(data.get('preco_combustivel', 6.09))
+    consumo = float(data.get('consumo', 3.0))
+    pedagio = float(data.get('pedagio', 0))
+    
+    # Simula distância baseada nos nomes
+    distancia = max(10, min(len(origem) * len(destino) * 2, 5000))
+    litros = distancia / consumo
+    custo_comb = litros * preco_comb
+    custo_manut = distancia * 0.35
+    custo_total = custo_comb + pedagio + custo_manut
+    lucro = receita - custo_total
+    margem = (lucro / receita * 100) if receita > 0 else 0
+    
+    resultado = {
+        'distancia': round(distancia, 1),
+        'custo_combustivel': round(custo_comb, 2),
+        'custo_manutencao': round(custo_manut, 2),
+        'custo_total': round(custo_total, 2),
+        'lucro': round(lucro, 2),
+        'margem': round(margem, 1),
+        'litros': round(litros, 1)
+    }
+    
+    try:
+        conn = sqlite3.connect('viagens.db')
+        c = conn.cursor()
+        c.execute('INSERT INTO viagens VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+                  (None, origem, destino, distancia, custo_comb, pedagio,
+                   custo_manut, receita, lucro, margem, datetime.now()))
+        conn.commit()
+        conn.close()
+    except: pass
+    
+    return jsonify(resultado)
+
+@app.route('/historico')
+def historico():
+    conn = sqlite3.connect('viagens.db')
+    c = conn.cursor()
+    c.execute('SELECT * FROM viagens ORDER BY data DESC LIMIT 50')
+    viagens = c.fetchall()
+    conn.close()
+    return jsonify([{'id':v[0], 'origem':v[1], 'destino':v[2],
+                     'distancia':v[3], 'lucro':v[8], 'data':v[10]} for v in viagens])
+
+if __name__ == '__main__':
+    init_db()
+    app.run(host='0.0.0.0', port=5000, debug=False)

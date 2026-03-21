@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Micokrovix - Assistente de Frete</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0e1a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; min-height: 100vh; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 32px; }
+        .logo { font-size: 80px; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        h1 { color: white; font-size: 48px; letter-spacing: 2px; }
+        .sub { color: #6c5ce7; font-size: 16px; }
+        .card { background: #1a1f2e; border-radius: 48px; padding: 32px 24px; margin-bottom: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; color: #a0a0c0; font-size: 14px; margin-bottom: 8px; margin-left: 8px; }
+        input { width: 100%; padding: 20px; font-size: 20px; background: #0f1222; border: 2px solid #2d3e50; border-radius: 32px; color: white; transition: all 0.3s; }
+        input:focus { outline: none; border-color: #6c5ce7; background: #1a1f2e; }
+        .btn { width: 100%; padding: 24px; font-size: 24px; font-weight: bold; border: none; border-radius: 48px; cursor: pointer; transition: transform 0.1s; margin-top: 16px; }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: linear-gradient(135deg, #6c5ce7, #a55ef7); color: white; box-shadow: 0 8px 24px rgba(108,92,231,0.4); }
+        .btn-secondary { background: #2d3e50; color: white; }
+        .result-card { background: linear-gradient(135deg, #1a1f2e, #0f1222); border-radius: 48px; padding: 32px; margin-bottom: 24px; border: 1px solid #2d3e50; }
+        .profit-value { font-size: 64px; font-weight: bold; text-align: center; margin: 16px 0; }
+        .profit-positive { color: #00b894; }
+        .profit-negative { color: #d63031; }
+        .status-badge { padding: 20px; border-radius: 48px; text-align: center; font-size: 24px; font-weight: bold; margin: 16px 0; }
+        .status-good { background: #00b894; color: white; }
+        .status-medium { background: #fdcb6e; color: #2d3436; }
+        .status-bad { background: #d63031; color: white; }
+        .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #2d3e50; color: #a0a0c0; }
+        .detail-value { color: white; font-weight: bold; }
+        .voice-button { position: fixed; bottom: 30px; right: 30px; width: 80px; height: 80px; background: linear-gradient(135deg, #6c5ce7, #a55ef7); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; box-shadow: 0 8px 24px rgba(108,92,231,0.4); cursor: pointer; transition: transform 0.2s; z-index: 1000; }
+        .voice-button:active { transform: scale(0.95); }
+        .assistant-panel { background: #1a1f2e; border-radius: 48px; padding: 24px; margin-bottom: 24px; border: 2px solid #6c5ce7; }
+        .assistant-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .assistant-avatar { font-size: 40px; }
+        .assistant-name { color: white; font-size: 20px; font-weight: bold; }
+        .assistant-message { background: #0f1222; border-radius: 24px; padding: 16px; color: #a0a0c0; margin-bottom: 12px; font-size: 16px; }
+        .assistant-input { display: flex; gap: 12px; }
+        .assistant-input input { flex: 1; padding: 16px; font-size: 16px; margin: 0; }
+        .assistant-input button { width: auto; padding: 16px 24px; margin: 0; }
+        .loading { display: inline-block; width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 600px) {
+            body { padding: 12px; }
+            .profit-value { font-size: 44px; }
+            .btn { font-size: 20px; padding: 20px; }
+            input { font-size: 18px; padding: 16px; }
+            .voice-button { width: 60px; height: 60px; font-size: 30px; bottom: 20px; right: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🚛</div>
+            <h1>MICOKROVIX</h1>
+            <div class="sub">Pra quem vive da estrada</div>
+        </div>
+        
+        <!-- PAINEL DA ASSISTENTE IA -->
+        <div class="assistant-panel" id="assistantPanel">
+            <div class="assistant-header">
+                <div class="assistant-avatar">🎙️</div>
+                <div class="assistant-name">Assistente Micokrovix</div>
+            </div>
+            <div class="assistant-message" id="assistantMessage">
+                Fala, irmão! Como posso ajudar? Posso calcular um frete, ver histórico ou te dar dicas!
+            </div>
+            <div class="assistant-input">
+                <input type="text" id="assistantInput" placeholder="Digite sua pergunta ou fale comigo...">
+                <button class="btn-primary" onclick="sendAssistantMessage()" style="padding: 16px 24px;">Enviar</button>
+            </div>
+        </div>
+        
+        <!-- FORMULÁRIO -->
+        <div class="card">
+            <div class="input-group">
+                <label>📍 ORIGEM</label>
+                <input type="text" id="origem" placeholder="Ex: São Paulo, SP" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label>🎯 DESTINO</label>
+                <input type="text" id="destino" placeholder="Ex: Rio de Janeiro, RJ" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label>💰 VALOR DO FRETE (R$)</label>
+                <input type="text" id="valor_frete" placeholder="Ex: 2.500,00">
+            </div>
+            <div class="input-group">
+                <label>⛽ PREÇO DO DIESEL (R$/L)</label>
+                <input type="text" id="preco_diesel" value="6,09">
+            </div>
+            <div class="input-group">
+                <label>📊 CONSUMO (km/L)</label>
+                <input type="text" id="consumo" value="3,0">
+            </div>
+            <div class="input-group">
+                <label>🛣️ PEDÁGIOS (R$ - opcional)</label>
+                <input type="text" id="pedagio" placeholder="Deixe em branco para cálculo automático">
+            </div>
+            <div class="input-group">
+                <label>📏 DISTÂNCIA (km - opcional)</label>
+                <input type="text" id="distancia" placeholder="Deixe em branco para cálculo automático">
+            </div>
+            
+            <button class="btn btn-primary" onclick="calculateTrip()" id="calcBtn">
+                🔢 CALCULAR VIAGEM
+            </button>
+            <button class="btn btn-secondary" onclick="showHistory()">
+                📜 VER HISTÓRICO
+            </button>
+            <button class="btn btn-secondary" onclick="checkFairPrice()">
+                💡 QUANTO DEVERIA PAGAR?
+            </button>
+        </div>
+        
+        <div id="resultado"></div>
+        <div id="historico"></div>
+    </div>
+    
+    <div class="voice-button" onclick="startVoice()">
+        🎙️
+    </div>
+    
+    <script>
+        const API_URL = window.location.origin;
+        let vozAtual = null;
+        
+        // =========================
+        // FUNÇÃO PARA FALAR EM VOZ ALTA (COM VOZ NATURAL DO CHROME)
+        // =========================
+        function speak(text) {
+            if (!('speechSynthesis' in window)) {
+                console.log('Voz não suportada');
+                return;
+            }
+            
+            // Cancelar qualquer fala anterior
+            window.speechSynthesis.cancel();
+            
+            // Esperar vozes carregarem
+            const trySpeak = () => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'pt-BR';
+                utterance.rate = 0.85;  // Mais natural
+                utterance.pitch = 1.0;
+                
+                // Tentar pegar voz feminina natural do Google
+                const voices = window.speechSynthesis.getVoices();
+                const ptVoice = voices.find(v => v.lang === 'pt-BR' && (v.name.includes('Google') || v.name.includes('Natural')));
+                if (ptVoice) {
+                    utterance.voice = ptVoice;
+                }
+                
+                window.speechSynthesis.speak(utterance);
+            };
+            
+            // Se vozes já carregaram, fala direto
+            if (window.speechSynthesis.getVoices().length > 0) {
+                trySpeak();
+            } else {
+                // Aguarda carregar as vozes
+                window.speechSynthesis.onvoiceschanged = trySpeak;
+            }
+        }
+        
+        // =========================
+        // ATUALIZAR MENSAGEM DA ASSISTENTE
+        // =========================
+        function updateAssistantMessage(text, speakIt = true) {
+            const msgDiv = document.getElementById('assistantMessage');
+            msgDiv.innerHTML = text;
+            if (speakIt) {
+                speak(text);
+            }
+        }
+        
+        // =========================
+        // ENVIAR MENSAGEM DIGITADA
+        // =========================
+        async function sendAssistantMessage() {
+            const input = document.getElementById('assistantInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+            
+            updateAssistantMessage(`🎤 Você: ${msg}`, false);
+            input.value = '';
+            
+            await processCommand(msg);
+        }
+        
+        // =========================
+        // PROCESSAR COMANDO DE VOZ/TEXTO
+        // =========================
+        async function processCommand(text) {
+            const lowerText = text.toLowerCase();
+            
+            // Verificar se quer calcular
+            if (lowerText.includes('calcular') || lowerText.includes('frete') || lowerText.includes('nova viagem')) {
+                const origem = document.getElementById('origem').value;
+                const destino = document.getElementById('destino').value;
+                
+                if (!origem || !destino) {
+                    updateAssistantMessage('Fala a origem e o destino primeiro, irmão! Depois me fala o valor do frete.');
+                } else {
+                    updateAssistantMessage(`Vamos calcular de ${origem} para ${destino}. Qual o valor do frete, irmão?`);
+                }
+                return;
+            }
+            
+            // Verificar se é um número (valor do frete)
+            const numberMatch = text.match(/(\d+[.,]?\d*)/);
+            if (numberMatch && !lowerText.includes('histórico') && !lowerText.includes('preço') && !lowerText.includes('mostrar')) {
+                const valor = numberMatch[0].replace(',', '.');
+                document.getElementById('valor_frete').value = valor;
+                updateAssistantMessage(`Recebi o valor R$ ${valor}. Vou calcular agora!`);
+                setTimeout(() => calculateTrip(), 500);
+                return;
+            }
+            
+            // Histórico
+            if (lowerText.includes('histórico') || lowerText.includes('ultimas') || lowerText.includes('mostrar viagens')) {
+                updateAssistantMessage('Buscando suas últimas viagens...');
+                showHistory();
+                return;
+            }
+            
+            // Preço justo
+            if (lowerText.includes('preço justo') || lowerText.includes('quanto paga') || lowerText.includes('média')) {
+                const origem = document.getElementById('origem').value;
+                const destino = document.getElementById('destino').value;
+                if (origem && destino) {
+                    updateAssistantMessage(`Consultando o preço justo para ${origem} até ${destino}...`);
+                    checkFairPrice();
+                } else {
+                    updateAssistantMessage('Primeiro me fala a origem e o destino, irmão!');
+                }
+                return;
+            }
+            
+            // Ajuda
+            if (lowerText.includes('ajuda') || lowerText.includes('como funciona') || lowerText.includes('o que você faz')) {
+                updateAssistantMessage('Fala "calcular" pra começar um novo frete, "histórico" pra ver suas viagens ou "preço justo" pra saber a média da rota. Pode falar o valor do frete que eu calculo na hora! Também calculo pedágio automaticamente!');
+                return;
+            }
+            
+            // Saudação
+            if (lowerText.includes('olá') || lowerText.includes('oi') || lowerText.includes('bom dia') || lowerText.includes('boa tarde')) {
+                updateAssistantMessage('Olá, irmão! Tudo bem? Como posso ajudar você hoje?');
+                return;
+            }
+            
+            // Resposta padrão
+            updateAssistantMessage(`Entendi "${text}". Fala "calcular", "histórico", "preço justo" ou me dá o valor do frete que eu calculo na hora!`);
+        }
+        
+        // =========================
+        // FUNÇÃO PRINCIPAL DE CÁLCULO
+        // =========================
+        async function calculateTrip() {
+            const btn = document.getElementById('calcBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="loading"></span> CALCULANDO...';
+            btn.disabled = true;
+            
+            try {
+                const data = {
+                    origem: document.getElementById('origem').value,
+                    destino: document.getElementById('destino').value,
+                    distancia: parseFloat(document.getElementById('distancia').value.replace(',', '.')) || 0,
+                    valor_frete: document.getElementById('valor_frete').value,
+                    consumo: parseFloat(document.getElementById('consumo').value.replace(',', '.')),
+                    preco_diesel: document.getElementById('preco_diesel').value,
+                    pedagio: document.getElementById('pedagio').value.replace(',', '.') || 0
+                };
+                
+                if (!data.origem || !data.destino || !data.valor_frete) {
+                    alert('Preencha origem, destino e valor do frete, irmão!');
+                    return;
+                }
+                
+                const response = await fetch(API_URL + '/api/calculate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const r = await response.json();
+                displayResult(r);
+                
+                // Falar o resultado em voz alta de forma mais natural
+                const profitText = r.lucro >= 0 ? `lucro de ${formatCurrency(r.lucro)}` : `prejuízo de ${formatCurrency(Math.abs(r.lucro))}`;
+                const pedagioText = r.pedagio > 0 ? `com pedágio de ${formatCurrency(r.pedagio)}` : 'sem pedágio';
+                speak(`Viagem calculada, irmão! Distância ${r.distancia} quilômetros. Custo total ${formatCurrency(r.custo_total)}. ${profitText}. Margem de ${r.margem} por cento. ${r.mensagem}`);
+                
+            } catch (error) {
+                alert('Erro ao calcular. Tenta de novo, irmão!');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+        
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        }
+        
+        function displayResult(r) {
+            const profitClass = r.lucro >= 0 ? 'profit-positive' : 'profit-negative';
+            const profitSign = r.lucro >= 0 ? '+' : '';
+            
+            let statusClass = '';
+            if (r.status_class === 'good') statusClass = 'status-good';
+            else if (r.status_class === 'medium') statusClass = 'status-medium';
+            else statusClass = 'status-bad';
+            
+            document.getElementById('resultado').innerHTML = `
+                <div class="result-card">
+                    <div class="profit-value ${profitClass}">
+                        ${profitSign}${formatCurrency(Math.abs(r.lucro))}
+                    </div>
+                    <div class="status-badge ${statusClass}">
+                        ${r.status}
+                    </div>
+                    <div style="text-align: center; color: #a0a0c0; margin-bottom: 24px;">
+                        ${r.mensagem}
+                    </div>
+                    <div class="detail-row">
+                        <span>📏 Distância</span>
+                        <span class="detail-value">${r.distancia} km</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>⛽ Combustível</span>
+                        <span class="detail-value">${formatCurrency(r.combustivel)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>🔧 Manutenção (R$0,35/km)</span>
+                        <span class="detail-value">${formatCurrency(r.manutencao)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>🛣️ Pedágios</span>
+                        <span class="detail-value">${formatCurrency(r.pedagio)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>💰 Custo Total</span>
+                        <span class="detail-value">${formatCurrency(r.custo_total)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>📈 Margem de Lucro</span>
+                        <span class="detail-value">${r.margem}%</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>💡 Lucro por km</span>
+                        <span class="detail-value">${formatCurrency(r.lucro / r.distancia)}/km</span>
+                    </div>
+                    ${r.rodovia ? `<div class="detail-row"><span>🛣️ Rota</span><span class="detail-value">${r.rodovia}</span></div>` : ''}
+                </div>
+            `;
+            
+            document.getElementById('resultado').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        async function showHistory() {
+            const historyDiv = document.getElementById('historico');
+            historyDiv.innerHTML = '<div class="card" style="text-align:center">📜 Carregando histórico...</div>';
+            
+            try {
+                const response = await fetch(API_URL + '/api/history');
+                const trips = await response.json();
+                
+                if (trips.length === 0) {
+                    historyDiv.innerHTML = '<div class="card" style="text-align:center">📭 Nenhuma viagem calculada ainda, irmão!</div>';
+                    speak('Você ainda não tem nenhuma viagem no histórico. Faz um cálculo primeiro!');
+                    return;
+                }
+                
+                let html = '<div class="card"><h3 style="color:white; margin-bottom:20px;">📜 ÚLTIMAS VIAGENS</h3>';
+                for (const t of trips.slice(0,5)) {
+                    const profitClass = t.lucro >= 0 ? 'profit-positive' : 'profit-negative';
+                    const date = new Date(t.data).toLocaleDateString('pt-BR');
+                    html += `
+                        <div class="history-item" style="background:#0f1222; border-radius:32px; padding:16px; margin-bottom:12px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <strong style="color:white;">${t.origem} → ${t.destino}</strong>
+                                <span class="${profitClass}">${formatCurrency(t.lucro)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                                <span style="color:#a0a0c0;">📏 ${t.distancia} km</span>
+                                <span style="color:#a0a0c0;">📈 ${t.margem}%</span>
+                                <span style="color:#6c5ce7;">${date}</span>
+                            </div>
+                            ${t.rodovia ? `<div style="margin-top: 8px;"><span style="color:#6c5ce7;">🛣️ ${t.rodovia}</span></div>` : ''}
+                        </div>
+                    `;
+                }
+                html += '</div>';
+                historyDiv.innerHTML = html;
+                speak(`Aqui estão suas últimas ${trips.slice(0,5).length} viagens.`);
+                
+            } catch (error) {
+                historyDiv.innerHTML = '<div class="card" style="text-align:center">❌ Erro ao carregar histórico</div>';
+            }
+        }
+        
+        async function checkFairPrice() {
+            const origem = document.getElementById('origem').value;
+            const destino = document.getElementById('destino').value;
+            
+            if (!origem || !destino) {
+                alert('Digite origem e destino primeiro, irmão!');
+                return;
+            }
+            
+            try {
+                const response = await fetch(API_URL + '/api/fair_price', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ origem, destino })
+                });
+                const data = await response.json();
+                
+                if (data.avg_price) {
+                    const msg = `Na média, essa rota paga ${formatCurrency(data.avg_price)}. Lucro médio de ${formatCurrency(data.avg_profit)} e margem de ${data.avg_margin} por cento.`;
+                    updateAssistantMessage(msg);
+                } else {
+                    updateAssistantMessage(data.message);
+                }
+            } catch (error) {
+                alert('Erro ao consultar preço justo');
+            }
+        }
+        
+        // =========================
+        // COMANDO DE VOZ
+        // =========================
+        function startVoice() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'pt-BR';
+                recognition.interimResults = false;
+                recognition.start();
+                
+                recognition.onstart = () => {
+                    const voiceBtn = document.querySelector('.voice-button');
+                    voiceBtn.style.transform = 'scale(1.1)';
+                    voiceBtn.style.boxShadow = '0 0 30px rgba(108,92,231,0.8)';
+                    updateAssistantMessage('🎤 Ouvindo... Fala, irmão!', false);
+                };
+                
+                recognition.onresult = (event) => {
+                    const text = event.results[0][0].transcript;
+                    updateAssistantMessage(`🎤 Você disse: "${text}"`, false);
+                    processCommand(text);
+                };
+                
+                recognition.onend = () => {
+                    const voiceBtn = document.querySelector('.voice-button');
+                    voiceBtn.style.transform = 'scale(1)';
+                    voiceBtn.style.boxShadow = '';
+                };
+                
+                recognition.onerror = (event) => {
+                    console.log('Erro de voz:', event.error);
+                    updateAssistantMessage('Não entendi, irmão! Fala de novo ou digita aí.', false);
+                };
+            } else {
+                alert('Seu navegador não suporta voz, irmão! Usa o Chrome que funciona!');
+            }
+        }
+        
+        // Carregar vozes do Chrome
+        window.speechSynthesis.onvoiceschanged = () => {
+            console.log('Vozes carregadas');
+        };
+        
+        // Enter no input da assistente
+        document.getElementById('assistantInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendAssistantMessage();
+        });
+        
+        // Enter no formulário principal
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && document.activeElement.tagName !== 'INPUT' && document.activeElement.id !== 'assistantInput') {
+                calculateTrip();
+            }
+        });
+    </script>
+</body>
+</html>

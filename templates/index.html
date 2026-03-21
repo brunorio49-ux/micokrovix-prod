@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Micokrovix - Calculadora de Frete</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',Arial,sans-serif;background:#1e293b;padding:16px;}
+        .container{max-width:550px;margin:0 auto;}
+        .card{background:white;border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+        h1{color:#2563eb;text-align:center;margin-bottom:8px;font-size:28px;}
+        .sub{text-align:center;color:#6b7280;margin-bottom:20px;font-size:14px;}
+        .input-group{margin-bottom:12px;}
+        label{display:block;font-weight:600;margin-bottom:5px;color:#334155;}
+        input{width:100%;padding:14px;border:1px solid #e2e8f0;border-radius:12px;font-size:16px;background:#f8fafc;}
+        input:focus{outline:none;border-color:#2563eb;background:white;}
+        button{width:100%;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:8px;}
+        .btn-primary{background:#2563eb;color:white;}
+        .btn-secondary{background:#475569;color:white;}
+        .resultado{background:linear-gradient(135deg,#1e293b,#0f172a);color:white;border-radius:20px;padding:20px;margin-top:16px;}
+        .linha{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.1);}
+        .lucro-positivo{color:#4ade80;font-weight:bold;}
+        .lucro-negativo{color:#f87171;font-weight:bold;}
+        .historico-item{background:#f1f5f9;padding:12px;margin-bottom:8px;border-radius:12px;}
+        .small-text{font-size:12px;color:#64748b;margin-top:4px;}
+        @media(max-width:500px){body{padding:12px;}input,button{font-size:14px;padding:12px;}}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🚛 MICOKROVIX</h1>
+            <div class="sub">Pra quem vive da estrada</div>
+            
+            <div class="input-group"><label>📍 Origem</label><input type="text" id="origem" placeholder="Ex: São Paulo"></div>
+            <div class="input-group"><label>🎯 Destino</label><input type="text" id="destino" placeholder="Ex: Rio de Janeiro"></div>
+            <div class="input-group"><label>💰 Valor do Frete (R$)</label><input type="number" id="receita" placeholder="Ex: 1800" step="0.01"></div>
+            <div class="input-group"><label>⛽ Preço Combustível (R$/L)</label><input type="number" id="combustivel" value="6.09" step="0.01"></div>
+            <div class="input-group"><label>📊 Consumo (km/L)</label><input type="number" id="consumo" value="3.0" step="0.1"></div>
+            <div class="input-group"><label>🛣️ Pedágios (R$)</label><input type="number" id="pedagio" value="0" step="0.01"></div>
+            
+            <button class="btn-primary" onclick="calcular()">🔢 CALCULAR VIAGEM</button>
+            <button class="btn-secondary" onclick="verHistorico()">📜 VER HISTÓRICO</button>
+        </div>
+        
+        <div id="resultado"></div>
+        <div id="historico"></div>
+        
+        <div style="text-align:center; color:#94a3b8; font-size:12px; margin-top:20px;">
+            ⚡ Frete justo é com dados reais
+        </div>
+    </div>
+    
+    <script>
+        async function calcular() {
+            const btn = event.target;
+            const original = btn.textContent;
+            btn.textContent = '⏳ Calculando...';
+            btn.disabled = true;
+            
+            try {
+                const dados = {
+                    origem: document.getElementById('origem').value,
+                    destino: document.getElementById('destino').value,
+                    receita: document.getElementById('receita').value,
+                    preco_combustivel: document.getElementById('combustivel').value,
+                    consumo: document.getElementById('consumo').value,
+                    pedagio: document.getElementById('pedagio').value
+                };
+                
+                const res = await fetch('/calcular', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(dados)
+                });
+                const r = await res.json();
+                const lucroClass = r.lucro >= 0 ? 'lucro-positivo' : 'lucro-negativo';
+                const lucroSinal = r.lucro >= 0 ? '+' : '';
+                
+                document.getElementById('resultado').innerHTML = `
+                    <div class="resultado">
+                        <div class="linha"><span>📏 Distância:</span><span><strong>${r.distancia} km</strong></span></div>
+                        <div class="linha"><span>⛽ Combustível:</span><span>R$ ${r.custo_combustivel.toLocaleString('pt-BR')}</span></div>
+                        <div class="linha"><span>🔧 Manutenção:</span><span>R$ ${r.custo_manutencao.toLocaleString('pt-BR')}</span></div>
+                        <div class="linha"><span>💰 Custo Total:</span><span>R$ ${r.custo_total.toLocaleString('pt-BR')}</span></div>
+                        <div class="linha"><span>💵 LUCRO LÍQUIDO:</span><span class="${lucroClass}">${lucroSinal}R$ ${Math.abs(r.lucro).toLocaleString('pt-BR')}</span></div>
+                        <div class="linha"><span>📈 Margem:</span><span><strong>${r.margem}%</strong></span></div>
+                        <div class="linha"><span style="font-size:12px;">💡 Lucro por km:</span><span>R$ ${(r.lucro/r.distancia).toLocaleString('pt-BR')}/km</span></div>
+                    </div>
+                `;
+            } catch(e) {
+                document.getElementById('resultado').innerHTML = '<div class="card" style="color:red;">❌ Erro ao calcular. Tente novamente.</div>';
+            }
+            finally {
+                btn.textContent = original;
+                btn.disabled = false;
+            }
+        }
+        
+        async function verHistorico() {
+            const res = await fetch('/historico');
+            const viagens = await res.json();
+            
+            if(viagens.length === 0) {
+                document.getElementById('historico').innerHTML = '<div class="card"><div style="text-align:center; color:#6b7280;">📭 Nenhuma viagem calculada ainda</div></div>';
+                return;
+            }
+            
+            let html = '<div class="card"><h3 style="margin-bottom:12px;">📜 ÚLTIMAS VIAGENS</h3>';
+            for(const v of viagens.slice(0,10)) {
+                const lucroClass = v.lucro >= 0 ? 'lucro-positivo' : 'lucro-negativo';
+                const data = new Date(v.data).toLocaleDateString('pt-BR');
+                html += `
+                    <div class="historico-item">
+                        <div><strong>${v.origem || '?'} → ${v.destino || '?'}</strong></div>
+                        <div>📏 ${v.distancia} km | 💵 <span class="${lucroClass}">R$ ${v.lucro.toLocaleString('pt-BR')}</span></div>
+                        <div class="small-text">📅 ${data}</div>
+                    </div>
+                `;
+            }
+            html += '</div>';
+            document.getElementById('historico').innerHTML = html;
+        }
+    </script>
+</body>
+</html>

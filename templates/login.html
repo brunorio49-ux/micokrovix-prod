@@ -1,27 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt">
 <head>
-    <title>Micokrovix - Login</title>
+    <meta charset="UTF-8">
+    <title>Micokrovix</title>
+    <style>
+        body { background: #111; color: white; font-family: Arial; text-align: center; padding: 20px; }
+        .card { background: #222; margin: 20px auto; padding: 20px; border-radius: 15px; max-width: 350px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; }
+        button { width: 100%; padding: 12px; background: #00ff7f; color: black; font-weight: bold; border: none; border-radius: 8px; }
+        h2 { color: #00ff7f; }
+    </style>
 </head>
 <body>
+    <h1>🚚 Micokrovix</h1>
 
-<h2>🚛 Micokrovix</h2>
+    <!-- Formulário de Entrar -->
+    <div class="card">
+        <h2>Entrar</h2>
+        <form action="/login" method="POST">
+            <input type="text" name="username" placeholder="Usuário" required>
+            <input type="password" name="senha" placeholder="Senha" required>
+            <button type="submit">Entrar</button>
+        </form>
+    </div>
 
-<h3>Login</h3>
-<form method="POST" action="/login">
-    Usuário: <input name="username" required><br><br>
-    Senha: <input name="senha" type="password" required><br><br>
-    <button>Entrar</button>
-</form>
-
-<hr>
-
-<h3>Criar Conta</h3>
-<form method="POST" action="/registrar">
-    Usuário: <input name="username" required><br><br>
-    Senha: <input name="senha" type="password" required><br><br>
-    <button>Criar Conta</button>
-</form>
-
+    <!-- Formulário de Criar Conta -->
+    <div class="card">
+        <h2>Criar Conta</h2>
+        <form action="/registrar" method="POST">
+            <input type="text" name="username" placeholder="Usuário" required>
+            <input type="password" name="senha" placeholder="Senha" required>
+            <button type="submit">Criar Conta</button>
+        </form>
+    </div>
 </body>
 </html>
