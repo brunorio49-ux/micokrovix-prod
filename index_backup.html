@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Micokrovix — Gestão Inteligente de Fretes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ── TEMA ESCURO (padrão) ── */
+  :root {
+    --bg: #0A0C0F; --bg2: #111418; --bg3: #181C22; --bg4: #1E232B;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
+    --text: #F0F2F5; --text2: #8A9BB0; --text3: #4A5568;
+    --green: #00E577; --green2: #00B85E; --green-dim: rgba(0,229,119,0.12);
+    --red: #FF4D4D; --red-dim: rgba(255,77,77,0.12);
+    --amber: #FFB800; --amber-dim: rgba(255,184,0,0.12);
+    --blue: #3B82F6; --blue-dim: rgba(59,130,246,0.12);
+    --radius: 14px; --radius-sm: 8px;
+    --font-head: 'Syne', sans-serif; --font-body: 'DM Sans', sans-serif;
+    --shadow: 0 2px 20px rgba(0,0,0,0.4);
+  }
+  /* ── TEMA CLARO ── */
+  [data-theme="light"] {
+    --bg: #F8FAFC; --bg2: #FFFFFF; --bg3: #F1F5F9; --bg4: #E2E8F0;
+    --border: rgba(0,0,0,0.08); --border2: rgba(0,0,0,0.15);
+    --text: #1E293B; --text2: #475569; --text3: #94A3B8;
+    --green-dim: rgba(0,180,90,0.10);
+    --red-dim: rgba(220,50,50,0.10);
+    --amber-dim: rgba(200,140,0,0.10);
+    --blue-dim: rgba(59,130,246,0.10);
+    --shadow: 0 2px 20px rgba(0,0,0,0.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--font-body); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; transition: background 0.3s, color 0.3s; }
+
+  /* ── LAYOUT ── */
+  .sidebar { width: 240px; flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: transform 0.3s; }
+  .main { margin-left: 240px; flex: 1; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  .logo-wrap { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
+  .logo { font-family: var(--font-head); font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo span { color: var(--green); }
+  .logo-sub { font-size: 10px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .nav { padding: 16px 12px; flex: 1; }
+  .nav-label { font-size: 10px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 8px; margin-top: 16px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; color: var(--text2); font-size: 14px; font-weight: 500; transition: all 0.15s; margin-bottom: 2px; border: none; background: none; width: 100%; text-align: left; }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: var(--green-dim); color: var(--green); }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
+  .version-badge { font-size: 11px; color: var(--text3); text-align: center; }
+
+  /* ── TOPBAR ── */
+  .topbar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 32px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+  .page-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .hamburger { display: none; background: none; border: none; color: var(--text); font-size: 20px; cursor: pointer; }
+  .theme-btn { background: none; border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 6px 12px; cursor: pointer; font-size: 16px; color: var(--text); transition: all 0.15s; }
+  .theme-btn:hover { background: var(--bg3); }
+
+  /* ── PAGES ── */
+  .page { display: none; padding: 32px; }
+  .page.active { display: block; }
+
+  /* ── CARDS ── */
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
+  .card-sm { padding: 16px 20px; }
+
+  /* ── GRID ── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+  /* ── STAT CARDS ── */
+  .stat-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .stat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+  .stat-value { font-family: var(--font-head); font-size: 28px; font-weight: 700; line-height: 1; }
+  .stat-sub { font-size: 12px; color: var(--text2); margin-top: 6px; }
+  .stat-green { border-left: 3px solid var(--green); }
+  .stat-blue { border-left: 3px solid var(--blue); }
+  .stat-amber { border-left: 3px solid var(--amber); }
+
+  /* ── FORM ── */
+  .form-group { margin-bottom: 18px; }
+  .form-label { font-size: 12px; color: var(--text2); font-weight: 500; margin-bottom: 6px; display: block; letter-spacing: 0.3px; }
+  .form-input { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 11px 14px; color: var(--text); font-family: var(--font-body); font-size: 15px; transition: border-color 0.15s; outline: none; }
+  .form-input:focus { border-color: var(--green); }
+  .form-input::placeholder { color: var(--text3); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .search-wrap { position: relative; margin-bottom: 16px; }
+  .search-wrap::before { content: '🔍'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none; }
+  .search-input { padding-left: 38px !important; }
+
+  /* ── BUTTONS ── */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 15px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; text-decoration: none; }
+  .btn-primary { background: var(--green); color: #000; box-shadow: 0 0 20px rgba(0,229,119,0.25); }
+  .btn-primary:hover { background: var(--green2); }
+  .btn-secondary { background: var(--bg4); color: var(--text); border: 1px solid var(--border2); }
+  .btn-secondary:hover { background: var(--bg3); }
+  .btn-danger { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,77,77,0.2); }
+  .btn-full { width: 100%; }
+  .btn-lg { padding: 14px 28px; font-size: 16px; }
+
+  /* ── RESULTADO ── */
+  .result-box { border-radius: var(--radius); padding: 28px; border: 1px solid var(--border); margin-top: 24px; transition: all 0.4s; }
+  .result-box.good { background: var(--green-dim); border-color: rgba(0,229,119,0.25); }
+  .result-box.bad { background: var(--red-dim); border-color: rgba(255,77,77,0.25); }
+  .result-box.warn { background: var(--amber-dim); border-color: rgba(255,184,0,0.25); }
+  .result-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .result-icon { font-size: 32px; }
+  .result-title { font-family: var(--font-head); font-size: 20px; font-weight: 700; }
+  .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+  .result-item { background: rgba(0,0,0,0.15); border-radius: var(--radius-sm); padding: 14px; }
+  [data-theme="light"] .result-item { background: rgba(0,0,0,0.05); }
+  .result-item-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .result-item-val { font-family: var(--font-head); font-size: 22px; font-weight: 700; }
+
+  /* ── BADGE ── */
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge-green { background: var(--green-dim); color: var(--green); }
+  .badge-red { background: var(--red-dim); color: var(--red); }
+  .badge-amber { background: var(--amber-dim); color: var(--amber); }
+  .badge-blue { background: var(--blue-dim); color: var(--blue); }
+
+  /* ── TABELA HISTÓRICO ── */
+  .history-table { width: 100%; border-collapse: collapse; }
+  .history-table th { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+  .history-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .history-table tr:last-child td { border-bottom: none; }
+  .history-table tr:hover td { background: var(--bg3); }
+
+  /* ── SECTION HEADER ── */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .section-title { font-family: var(--font-head); font-size: 20px; font-weight: 700; }
+  .section-sub { font-size: 13px; color: var(--text2); margin-top: 4px; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar-wrap { background: var(--bg4); border-radius: 4px; height: 6px; overflow: hidden; }
+  .progress-bar { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+  .progress-green { background: var(--green); }
+  .progress-red { background: var(--red); }
+  .progress-amber { background: var(--amber); }
+
+  /* ── IA CHAT ── */
+  .ai-messages { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; max-height: 420px; overflow-y: auto; }
+  .ai-msg { padding: 14px 16px; border-radius: var(--radius-sm); font-size: 14px; line-height: 1.6; }
+  .ai-msg.assistant { background: var(--bg3); border: 1px solid var(--border); }
+  .ai-msg.user { background: var(--green-dim); border: 1px solid rgba(0,229,119,0.2); align-self: flex-end; max-width: 80%; }
+  .ai-input-wrap { display: flex; gap: 10px; }
+  .ai-input { flex: 1; }
+  .ai-typing { display: flex; align-items: center; gap: 6px; color: var(--text3); font-size: 13px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: bounce 1.2s infinite; }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+  /* ── ONBOARDING ── */
+  .onboard-hero { text-align: center; padding: 60px 24px 40px; background: linear-gradient(180deg, rgba(0,229,119,0.05) 0%, transparent 100%); border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 32px; }
+  .onboard-icon { font-size: 48px; margin-bottom: 16px; }
+  .onboard-title { font-family: var(--font-head); font-size: 32px; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+  .onboard-title span { color: var(--green); }
+  .onboard-sub { font-size: 16px; color: var(--text2); max-width: 480px; margin: 0 auto 28px; line-height: 1.6; }
+  .quick-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+  .quick-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; cursor: pointer; transition: all 0.2s; text-align: left; }
+  .quick-card:hover { border-color: var(--green); transform: translateY(-2px); }
+  .quick-card-icon { font-size: 28px; margin-bottom: 12px; }
+  .quick-card-title { font-family: var(--font-head); font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .quick-card-sub { font-size: 13px; color: var(--text2); line-height: 1.5; }
+
+  /* ── TOOLTIP ── */
+  .tooltip { position: relative; }
+  .tooltip:hover::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--bg4); color: var(--text); padding: 6px 10px; border-radius: var(--radius-sm); white-space: nowrap; font-size: 12px; z-index: 1000; border: 1px solid var(--border2); }
+
+  /* ── CHART ── */
+  .chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
+  .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .chart-bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 4px; transition: height 0.5s ease, transform 0.2s; cursor: pointer; }
+  .chart-bar:hover { transform: scaleY(1.05); transform-origin: bottom; }
+  .chart-bar-label { font-size: 10px; color: var(--text3); text-align: center; }
+  .chart-bar-val { font-size: 11px; color: var(--text2); }
+
+  /* ── MISC ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 20px; font-size: 14px; font-weight: 500; box-shadow: 0 8px 30px rgba(0,0,0,0.5); transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 999; display: flex; align-items: center; gap: 10px; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: rgba(0,229,119,0.4); }
+  .toast.error { border-color: rgba(255,77,77,0.4); }
+  .empty-state { text-align: center; padding: 60px 24px; color: var(--text3); }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-title { font-size: 18px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--border2); border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .tabs { display: flex; gap: 4px; background: var(--bg3); border-radius: var(--radius-sm); padding: 4px; margin-bottom: 24px; }
+  .tab { flex: 1; text-align: center; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text2); transition: all 0.15s; }
+  .tab.active { background: var(--bg2); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+  .score-num { font-family: var(--font-head); font-size: 48px; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 13px; color: var(--text2); margin-top: 4px; }
+  .ai-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--green-dim); color: var(--green); font-size: 14px; flex-shrink: 0; }
+  .ai-msg-row { display: flex; gap: 10px; align-items: flex-start; }
+  .sep { height: 20px; } .sep-sm { height: 12px; }
+  .info-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .info-row:last-child { border-bottom: none; }
+  .info-key { color: var(--text2); } .info-val { font-weight: 600; }
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; }
+  .overlay.show { display: block; }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .hamburger { display: block; }
+    .grid2, .grid4, .quick-actions, .result-grid { grid-template-columns: 1fr; }
+    .form-row, .form-row3 { grid-template-columns: 1fr; }
+    .page { padding: 20px 16px; }
+    .topbar { padding: 0 16px; }
+    .onboard-title { font-size: 24px; }
+    .stat-value { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="logo-wrap">
+    <div class="logo">Mico<span>krovix</span></div>
+    <div class="logo-sub">Gestão de Fretes</div>
+  </div>
+  <div class="nav">
+    <div class="nav-label">Principal</div>
+    <button class="nav-item active" onclick="showPage('inicio')"><span class="nav-icon">🏠</span> Início</button>
+    <button class="nav-item" onclick="showPage('calcular')"><span class="nav-icon">🧮</span> Calcular Frete</button>
+    <button class="nav-item" onclick="showPage('historico')"><span class="nav-icon">📋</span> Histórico</button>
+    <button class="nav-item" onclick="showPage('dashboard')"><span class="nav-icon">📊</span> Dashboard</button>
+    <div class="nav-label">Ferramentas</div>
+    <button class="nav-item" onclick="showPage('assistente')"><span class="nav-icon">🤖</span> Assistente IA</button>
+    <button class="nav-item" onclick="showPage('configuracoes')"><span class="nav-icon">⚙️</span> Configurações</button>
+  </div>
+  <div class="sidebar-footer">
+    <div class="version-badge">MVP v1.1 — Micokrovix</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:14px">
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <div class="page-title" id="topbar-title">Início</div>
+    </div>
+    <div class="topbar-right">
+      <button class="theme-btn" onclick="toggleTheme()" id="theme-btn" title="Alternar tema">🌙</button>
+      <span class="badge badge-green">● Online</span>
+    </div>
+  </div>
+
+  <!-- ══ INÍCIO ══ -->
+  <div class="page active" id="page-inicio">
+    <div class="onboard-hero">
+      <div class="onboard-icon">🚛</div>
+      <div class="onboard-title">Transforme fretes em<br><span>lucro real</span></div>
+      <div class="onboard-sub">Calcule, planeje e maximize seus ganhos em cada viagem. O Micokrovix é sua central de comando.</div>
+      <button class="btn btn-primary btn-lg" onclick="showPage('calcular')">🧮 Calcular meu primeiro frete</button>
+    </div>
+    <div class="quick-actions">
+      <div class="quick-card" onclick="showPage('calcular')"><div class="quick-card-icon">⚡</div><div class="quick-card-title">Cálculo Rápido</div><div class="quick-card-sub">Descubra se a viagem vale a pena antes de aceitar</div></div>
+      <div class="quick-card" onclick="showPage('dashboard')"><div class="quick-card-icon">📈</div><div class="quick-card-title">Ver Desempenho</div><div class="quick-card-sub">Acompanhe seus lucros e métricas</div></div>
+      <div class="quick-card" onclick="showPage('assistente')"><div class="quick-card-icon">🤖</div><div class="quick-card-title">Perguntar à IA</div><div class="quick-card-sub">Dicas personalizadas para o seu negócio</div></div>
+    </div>
+    <div class="grid4" style="margin-bottom:24px">
+      <div class="stat-card stat-green"><div class="stat-label">Total Faturado</div><div class="stat-value" id="s-faturado">R$ 0</div><div class="stat-sub">Todas as viagens</div></div>
+      <div class="stat-card stat-blue"><div class="stat-label">Lucro Total</div><div class="stat-value" id="s-lucro">R$ 0</div><div class="stat-sub">Após todos os custos</div></div>
+      <div class="stat-card stat-amber"><div class="stat-label">Viagens</div><div class="stat-value" id="s-viagens">0</div><div class="stat-sub">Realizadas</div></div>
+      <div class="stat-card" style="border-left:3px solid var(--text3)"><div class="stat-label">Média / Viagem</div><div class="stat-value" id="s-media">R$ 0</div><div class="stat-sub">Lucro médio</div></div>
+    </div>
+    <div id="ultima-viagem-wrap" style="display:none">
+      <div class="section-header">
+        <div><div class="section-title">Última Viagem</div></div>
+        <button class="btn btn-secondary" onclick="showPage('historico')">Ver todas →</button>
+      </div>
+      <div class="card" id="ultima-viagem-card"></div>
+    </div>
+  </div>
+
+  <!-- ══ CALCULAR ══ -->
+  <div class="page" id="page-calcular">
+    <div class="grid2" style="gap:24px;align-items:start">
+      <div>
+        <div class="card">
+          <div class="section-header" style="margin-bottom:20px">
+            <div><div class="section-title">Calcular Frete</div><div class="section-sub">Preencha os dados para calcular seu lucro</div></div>
+          </div>
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab('manual',this)">Manual</div>
+            <div class="tab" onclick="switchTab('rota',this)">Por Rota</div>
+          </div>
+
+          <!-- TAB MANUAL -->
+          <div id="tab-manual">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Origem</label><input class="form-input" id="f-origem" placeholder="Ex: São Paulo, SP" oninput="resetResultDebounced()"></div>
+              <div class="form-group"><label class="form-label">Destino</label><input class="form-input" id="f-destino" placeholder="Ex: Rio de Janeiro, RJ" oninput="resetResultDebounced()"></div>
+            </div>
+            <div class="form-row3">
+              <div class="form-group tooltip" data-tip="Distância total da viagem em km">
+                <label class="form-label">Distância (km)</label>
+                <input class="form-input" id="f-km" type="number" placeholder="450" min="1" oninput="resetResultDebounced()">
+              </div>
+              <div class="form-group tooltip" data-tip="Valor combinado com o cliente">
+                <label class="form-label">Valor do Frete (R$)</label>
+                <input class="form-input" id="f-valor" type="number" placeholder="3500" min="0" oninput="resetResultDebounced()">
+              </div>
+              <div class="form-group tooltip" data-tip="Quantos km seu veículo faz por litro">
+                <label class="form-label">Consumo (km/l)</label>
+                <input class="form-input" id="f-consumo" type="number" placeholder="2.5" step="0.1" min="0.1" oninput="resetResultDebounced()">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Preço Combustível (R$/l)</label><input class="form-input" id="f-combustivel" type="number" placeholder="6.20" step="0.01" oninput="resetResultDebounced()"></div>
+              <div class="form-group tooltip" data-tip="Pedágios, alimentação, etc."><label class="form-label">Custos Adicionais (R$)</label><input class="form-input" id="f-extras" type="number" placeholder="0" step="0.01" value="0" oninput="resetResultDebounced()"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Descrição (opcional)</label><input class="form-input" id="f-desc" placeholder="Ex: Carga de eletrônicos, cliente Fulano"></div>
+          </div>
+
+          <!-- TAB ROTA -->
+          <div id="tab-rota" style="display:none">
+            <div class="form-group"><label class="form-label">Cidade de Origem</label><input class="form-input" id="r-origem" placeholder="São Paulo, SP"></div>
+            <div class="form-group"><label class="form-label">Cidade de Destino</label><input class="form-input" id="r-destino" placeholder="Rio de Janeiro, RJ"></div>
+            <button class="btn btn-secondary btn-full" onclick="calcularRota()" id="btn-rota">🗺️ Buscar Rota e Distância</button>
+            <div id="rota-resultado" style="margin-top:16px;display:none"></div>
+            <hr class="divider">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Valor do Frete (R$)</label><input class="form-input" id="r-valor" type="number" placeholder="3500"></div>
+              <div class="form-group"><label class="form-label">Consumo (km/l)</label><input class="form-input" id="r-consumo" type="number" placeholder="2.5" step="0.1"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Preço Combustível (R$/l)</label><input class="form-input" id="r-combustivel" type="number" placeholder="6.20" step="0.01"></div>
+              <div class="form-group"><label class="form-label">Custos Adicionais (R$)</label><input class="form-input" id="r-extras" type="number" placeholder="0" value="0"></div>
+            </div>
+          </div>
+
+          <div class="sep-sm"></div>
+          <button class="btn btn-primary btn-full btn-lg" onclick="calcular()">⚡ Calcular Agora</button>
+        </div>
+      </div>
+
+      <div>
+        <div id="resultado-wrap">
+          <div class="card" style="text-align:center;padding:60px 24px">
+            <div style="font-size:48px;margin-bottom:16px">📊</div>
+            <div style="font-size:16px;color:var(--text2);font-weight:500">Resultado aparecerá aqui</div>
+            <div style="font-size:13px;color:var(--text3);margin-top:8px">Preencha os dados e clique em Calcular</div>
+          </div>
+        </div>
+        <div class="sep-sm"></div>
+        <div class="card card-sm">
+          <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Valores salvos</div>
+          <div class="info-row"><span class="info-key">Consumo padrão</span><span class="info-val" id="cfg-consumo-display">— km/l</span></div>
+          <div class="info-row"><span class="info-key">Combustível padrão</span><span class="info-val" id="cfg-comb-display">— R$/l</span></div>
+          <div style="margin-top:12px"><button class="btn btn-secondary" style="font-size:12px;padding:6px 12px" onclick="showPage('configuracoes')">⚙️ Configurar</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ HISTÓRICO ══ -->
+  <div class="page" id="page-historico">
+    <div class="section-header">
+      <div><div class="section-title">Histórico de Viagens</div><div class="section-sub">Todas as suas viagens calculadas</div></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-danger" onclick="limparHistorico()" id="btn-limpar" style="display:none;font-size:13px;padding:8px 14px">🗑️ Limpar</button>
+        <button class="btn btn-primary" onclick="showPage('calcular')">+ Nova Viagem</button>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <input class="form-input search-input" id="search-hist" placeholder="Buscar por cidade ou descrição..." oninput="filterHistorico(this.value)">
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div id="historico-wrap">
+        <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Nenhuma viagem ainda</div><div style="font-size:14px">Faça seu primeiro cálculo para ver o histórico</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DASHBOARD ══ -->
+  <div class="page" id="page-dashboard">
+    <div class="section-header"><div><div class="section-title">Dashboard</div><div class="section-sub">Visão completa do seu negócio</div></div></div>
+    <div class="grid4" style="margin-bottom:24px">
+      <div class="stat-card stat-green"><div class="stat-label">Faturamento</div><div class="stat-value" id="d-faturado">R$ 0</div><div class="stat-sub">Total bruto</div></div>
+      <div class="stat-card stat-blue"><div class="stat-label">Lucro Líquido</div><div class="stat-value" id="d-lucro">R$ 0</div><div class="stat-sub">Após custos</div></div>
+      <div class="stat-card stat-amber"><div class="stat-label">Custo Total</div><div class="stat-value" id="d-custo">R$ 0</div><div class="stat-sub">Combustível + extras</div></div>
+      <div class="stat-card" style="border-left:3px solid var(--blue)"><div class="stat-label">Margem Média</div><div class="stat-value" id="d-margem">0%</div><div class="stat-sub">Lucro / Faturamento</div></div>
+    </div>
+    <div class="grid2" style="gap:20px;align-items:start">
+      <div class="card">
+        <div class="section-header" style="margin-bottom:20px"><div class="section-title" style="font-size:16px">Lucro por Viagem</div></div>
+        <div class="chart-bars" id="chart-lucros"><div class="empty-state" style="width:100%"><div class="empty-icon" style="font-size:32px">📊</div><div class="empty-title" style="font-size:14px">Sem dados</div></div></div>
+      </div>
+      <div class="card">
+        <div class="section-title" style="font-size:16px;margin-bottom:16px">Insights</div>
+        <div id="insights-wrap"><div class="empty-state" style="padding:30px 0"><div class="empty-title" style="font-size:14px">Faça mais viagens para ver insights</div></div></div>
+      </div>
+    </div>
+    <div class="sep"></div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:20px 24px;border-bottom:1px solid var(--border)"><div class="section-title" style="font-size:16px">Top Viagens por Lucro</div></div>
+      <div id="top-viagens"></div>
+    </div>
+  </div>
+
+  <!-- ══ ASSISTENTE IA ══ -->
+  <div class="page" id="page-assistente">
+    <div class="grid2" style="gap:24px;align-items:start">
+      <div>
+        <div class="card" style="min-height:500px;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+            <div style="width:40px;height:40px;border-radius:50%;background:var(--green-dim);display:flex;align-items:center;justify-content:center;font-size:20px">🤖</div>
+            <div><div style="font-family:var(--font-head);font-size:16px;font-weight:700">Assistente Micokrovix</div><div style="font-size:12px;color:var(--green)">● Especialista em fretes e logística</div></div>
+          </div>
+          <div class="ai-messages" id="ai-messages" style="flex:1">
+            <div class="ai-msg-row">
+              <div class="ai-icon">🤖</div>
+              <div class="ai-msg assistant">Olá! Sou o assistente do Micokrovix. Posso ajudá-lo com dicas de lucro, negociação de fretes, economia de combustível e muito mais. O que você precisa? 🚛</div>
+            </div>
+          </div>
+          <div id="ai-typing-indicator" style="display:none;margin-bottom:10px">
+            <div class="ai-typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>Assistente pensando...</span></div>
+          </div>
+          <div class="ai-input-wrap">
+            <input class="form-input ai-input" id="ai-input" placeholder="Pergunte qualquer coisa sobre fretes..." onkeydown="if(event.key==='Enter')enviarMensagem()">
+            <button class="btn btn-primary" onclick="enviarMensagem()">→</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="section-title" style="font-size:16px;margin-bottom:16px">Perguntas Frequentes</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;font-size:13px;padding:12px 14px" onclick="perguntarIA('Como posso aumentar meu lucro por viagem?')">💡 Como aumentar meu lucro?</button>
+            <button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;font-size:13px;padding:12px 14px" onclick="perguntarIA('Qual é a margem de lucro ideal para um caminhoneiro?')">📊 Qual margem ideal?</button>
+            <button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;font-size:13px;padding:12px 14px" onclick="perguntarIA('Como calcular o preço mínimo para aceitar um frete?')">🧮 Preço mínimo do frete?</button>
+            <button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;font-size:13px;padding:12px 14px" onclick="perguntarIA('Quais são os maiores custos ocultos no transporte de carga?')">🔍 Custos ocultos?</button>
+            <button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;font-size:13px;padding:12px 14px" onclick="perguntarIA('Como negociar um frete melhor com o cliente?')">🤝 Como negociar fretes?</button>
+            <button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;font-size:13px;padding:12px 14px" onclick="perguntarIA('Dicas para economizar combustível no caminhão?')">⛽ Economizar combustível?</button>
+          </div>
+        </div>
+        <div class="sep-sm"></div>
+        <div class="card">
+          <div class="section-title" style="font-size:16px;margin-bottom:4px">Análise do Seu Negócio</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:14px">Baseada nas suas viagens</div>
+          <div id="ia-analise-content"><div style="font-size:13px;color:var(--text3)">Faça mais viagens para gerar análises personalizadas.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CONFIGURAÇÕES ══ -->
+  <div class="page" id="page-configuracoes">
+    <div style="max-width:600px">
+      <div class="section-header"><div><div class="section-title">Configurações</div><div class="section-sub">Personalize sua experiência</div></div></div>
+      <div class="card">
+        <div style="font-family:var(--font-head);font-size:16px;font-weight:700;margin-bottom:16px">Valores Padrão</div>
+        <div class="form-group"><label class="form-label">Consumo padrão do veículo (km/l)</label><input class="form-input" id="cfg-consumo" type="number" step="0.1" placeholder="Ex: 2.5"></div>
+        <div class="form-group"><label class="form-label">Preço padrão do combustível (R$/l)</label><input class="form-input" id="cfg-combustivel" type="number" step="0.01" placeholder="Ex: 6.20"></div>
+        <div class="form-group"><label class="form-label">Custo por km rodado (R$/km) — manutenção</label><input class="form-input" id="cfg-custo-km" type="number" step="0.01" placeholder="Ex: 0.15"></div>
+        <div class="form-group"><label class="form-label">Nome do motorista</label><input class="form-input" id="cfg-nome" placeholder="Seu nome"></div>
+        <button class="btn btn-primary btn-full" onclick="salvarConfig()">💾 Salvar Configurações</button>
+      </div>
+      <div class="sep-sm"></div>
+      <div class="card">
+        <div style="font-family:var(--font-head);font-size:16px;font-weight:700;margin-bottom:16px">Dados</div>
+        <button class="btn btn-secondary btn-full" onclick="exportarDados()" style="margin-bottom:10px">📤 Exportar Histórico (CSV)</button>
+        <button class="btn btn-danger btn-full" onclick="if(confirm('Apagar TODOS os dados?'))limparTudo()">🗑️ Apagar todos os dados</button>
+      </div>
+      <div class="sep-sm"></div>
+      <div class="card" style="text-align:center;padding:32px">
+        <div style="font-size:32px;margin-bottom:12px">🚛</div>
+        <div style="font-family:var(--font-head);font-size:18px;font-weight:700">Micokrovix MVP v1.1</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:8px">Gestão inteligente de fretes para caminhoneiros</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px">Feito com ❤️ para motoristas brasileiros</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════
+let viagens = JSON.parse(localStorage.getItem('micokrovix-viagens') || '[]');
+let config  = JSON.parse(localStorage.getItem('micokrovix-config')  || '{}');
+let aiHistory = JSON.parse(localStorage.getItem('micokrovix-ai') || '[]');
+let currentTab = 'manual';
+let rotaKm = 0;
+let debounceTimer;
+
+// ═══════════════════════════════════
+// TEMA
+// ═══════════════════════════════════
+function toggleTheme() {
+  const html = document.documentElement;
+  const isLight = html.getAttribute('data-theme') === 'light';
+  html.setAttribute('data-theme', isLight ? 'dark' : 'light');
+  document.getElementById('theme-btn').textContent = isLight ? '🌙' : '☀️';
+  localStorage.setItem('micokrovix-theme', isLight ? 'dark' : 'light');
+}
+(function initTheme() {
+  const saved = localStorage.getItem('micokrovix-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  document.getElementById('theme-btn').textContent = saved === 'light' ? '☀️' : '🌙';
+})();
+
+// ═══════════════════════════════════
+// NAVEGAÇÃO
+// ═══════════════════════════════════
+const pageTitles = { inicio:'Início', calcular:'Calcular Frete', historico:'Histórico', dashboard:'Dashboard', assistente:'Assistente IA', configuracoes:'Configurações' };
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if(n.textContent.trim().toLowerCase().includes(pageTitles[id]?.split(' ')[0]?.toLowerCase()))
+      n.classList.add('active');
+  });
+  document.getElementById('topbar-title').textContent = pageTitles[id] || id;
+  closeSidebar();
+  if(id === 'inicio')        atualizarInicio();
+  if(id === 'dashboard')     atualizarDashboard();
+  if(id === 'historico')     renderHistorico();
+  if(id === 'configuracoes') carregarConfig();
+  if(id === 'assistente')    atualizarAnalise();
+  window.scrollTo(0, 0);
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ═══════════════════════════════════
+// DEBOUNCE
+// ═══════════════════════════════════
+function debounce(fn, delay) {
+  return (...args) => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => fn(...args), delay);
+  };
+}
+const resetResultDebounced = debounce(resetResult, 300);
+
+// ═══════════════════════════════════
+// TABS
+// ═══════════════════════════════════
+function switchTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-manual').style.display = tab === 'manual' ? 'block' : 'none';
+  document.getElementById('tab-rota').style.display   = tab === 'rota'   ? 'block' : 'none';
+  resetResult();
+}
+
+// ═══════════════════════════════════
+// CÁLCULO
+// ═══════════════════════════════════
+function resetResult() {
+  document.getElementById('resultado-wrap').innerHTML = `
+    <div class="card" style="text-align:center;padding:60px 24px">
+      <div style="font-size:48px;margin-bottom:16px">📊</div>
+      <div style="font-size:16px;color:var(--text2);font-weight:500">Resultado aparecerá aqui</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:8px">Preencha os dados e clique em Calcular</div>
+    </div>`;
+}
+
+function getVal(id) { return parseFloat(document.getElementById(id)?.value) || 0; }
+function getStr(id) { return document.getElementById(id)?.value?.trim() || ''; }
+
+function calcular() {
+  let origem, destino, km, valor, consumo, combustivel, extras;
+  if (currentTab === 'manual') {
+    origem = getStr('f-origem') || 'Origem';
+    destino = getStr('f-destino') || 'Destino';
+    km = getVal('f-km');
+    valor = getVal('f-valor');
+    consumo = getVal('f-consumo') || config.consumo || 0;
+    combustivel = getVal('f-combustivel') || config.combustivel || 0;
+    extras = getVal('f-extras');
+  } else {
+    origem = getStr('r-origem') || 'Origem';
+    destino = getStr('r-destino') || 'Destino';
+    km = rotaKm || 0;
+    valor = getVal('r-valor');
+    consumo = getVal('r-consumo') || config.consumo || 0;
+    combustivel = getVal('r-combustivel') || config.combustivel || 0;
+    extras = getVal('r-extras');
+  }
+
+  if (!km || km <= 0)          { showToast('Informe a distância em km', 'error'); return; }
+  if (!valor || valor <= 0)    { showToast('Informe o valor do frete', 'error'); return; }
+  if (!consumo || consumo <= 0){ showToast('Informe o consumo do veículo (km/l)', 'error'); return; }
+  if (!combustivel || combustivel <= 0){ showToast('Informe o preço do combustível', 'error'); return; }
+
+  const litros          = km / consumo;
+  const custoCombustivel= litros * combustivel;
+  const custoManutencao = km * (config.custoKm || 0);
+  const custoTotal      = custoCombustivel + extras + custoManutencao;
+  const lucro           = valor - custoTotal;
+  const margem          = (lucro / valor) * 100;
+  const custoPorKm      = custoTotal / km;
+  const lucroPorKm      = lucro / km;
+
+  let statusClass, statusIcon, statusText, statusColor;
+  if (margem >= 30)      { statusClass='good'; statusIcon='✅'; statusText='Frete Lucrativo!'; statusColor='var(--green)'; }
+  else if (margem >= 15) { statusClass='warn'; statusIcon='⚠️'; statusText='Margem Baixa';    statusColor='var(--amber)'; }
+  else if (margem >= 0)  { statusClass='warn'; statusIcon='⚡'; statusText='Lucro Mínimo';    statusColor='var(--amber)'; }
+  else                   { statusClass='bad';  statusIcon='❌'; statusText='Prejuízo!';        statusColor='var(--red)';   }
+
+  const viagem = {
+    id: Date.now(), data: new Date().toLocaleDateString('pt-BR'),
+    origem, destino, km, valor, consumo, combustivel, extras,
+    custoCombustivel, custoTotal, lucro, margem, custoPorKm, lucroPorKm,
+    desc: getStr('f-desc'), status: statusClass
+  };
+  viagens.unshift(viagem);
+  salvarViagens();
+
+  document.getElementById('resultado-wrap').innerHTML = `
+    <div class="result-box ${statusClass}">
+      <div class="result-header">
+        <span class="result-icon">${statusIcon}</span>
+        <div>
+          <div class="result-title">${statusText}</div>
+          <div style="font-size:13px;color:var(--text2)">${origem} → ${destino} • ${km} km</div>
+        </div>
+      </div>
+      <div class="result-grid">
+        <div class="result-item"><div class="result-item-label">Lucro Líquido</div><div class="result-item-val" style="color:${statusColor}">${fmtBRL(lucro)}</div></div>
+        <div class="result-item"><div class="result-item-label">Custo Total</div><div class="result-item-val">${fmtBRL(custoTotal)}</div></div>
+        <div class="result-item"><div class="result-item-label">Margem</div><div class="result-item-val" style="color:${statusColor}">${margem.toFixed(1)}%</div></div>
+      </div>
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:6px">
+          <span>Margem de lucro</span><span>${Math.max(0,margem).toFixed(1)}%</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar ${statusClass==='good'?'progress-green':statusClass==='bad'?'progress-red':'progress-amber'}" style="width:${Math.min(100,Math.max(0,margem))}%"></div>
+        </div>
+      </div>
+      <div class="info-row"><span class="info-key">Valor do Frete</span><span class="info-val" style="color:var(--green)">${fmtBRL(valor)}</span></div>
+      <div class="info-row"><span class="info-key">Combustível (${litros.toFixed(1)}L)</span><span class="info-val">${fmtBRL(custoCombustivel)}</span></div>
+      ${extras > 0 ? `<div class="info-row"><span class="info-key">Custos Adicionais</span><span class="info-val">${fmtBRL(extras)}</span></div>` : ''}
+      ${custoManutencao > 0 ? `<div class="info-row"><span class="info-key">Manutenção estimada</span><span class="info-val">${fmtBRL(custoManutencao)}</span></div>` : ''}
+      <div class="info-row"><span class="info-key">Custo por km</span><span class="info-val">${fmtBRL(custoPorKm)}/km</span></div>
+      <div class="info-row"><span class="info-key">Lucro por km</span><span class="info-val" style="color:${statusColor}">${fmtBRL(lucroPorKm)}/km</span></div>
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+        <div style="font-size:12px;color:var(--text3)">💡 ${gerarDica(margem, valor)}</div>
+      </div>
+    </div>`;
+
+  showToast('Viagem salva no histórico! ✅', 'success');
+  atualizarInicio();
+}
+
+function gerarDica(margem, valor) {
+  if (margem < 0)   return `Para cobrir os custos, o frete deveria ser pelo menos ${fmtBRL(valor * (1 - margem/100))}.`;
+  if (margem < 15)  return `Tente negociar mais. Uma margem saudável começa em 25%.`;
+  if (margem >= 40) return `Excelente! Priorize rotas com perfil similar a esta.`;
+  return `Margem razoável. Verifique se há pedágios ou custos extras não contabilizados.`;
+}
+
+// ═══════════════════════════════════
+// ROTA
+// ═══════════════════════════════════
+async function calcularRota() {
+  const origem  = getStr('r-origem');
+  const destino = getStr('r-destino');
+  if (!origem || !destino) { showToast('Informe origem e destino', 'error'); return; }
+  const btn = document.getElementById('btn-rota');
+  btn.innerHTML = '<span class="spinner"></span> Calculando rota...';
+  btn.disabled = true;
+  try {
+    const [oLon, oLat] = await geocode(origem);
+    const [dLon, dLat] = await geocode(destino);
+    const resp = await fetch(`https://api.openrouteservice.org/v2/directions/driving-hgv?api_key=5b3ce3597851110001cf62483e3ac5b4acd94e3a8bbaade35048b1a3&start=${oLon},${oLat}&end=${dLon},${dLat}`);
+    const data = await resp.json();
+    if (data.features && data.features[0]) {
+      const seg = data.features[0].properties.segments[0];
+      rotaKm = (seg.distance / 1000).toFixed(1) * 1;
+      const durMin = Math.round(seg.duration / 60);
+      const horas = Math.floor(durMin / 60), mins = durMin % 60;
+      document.getElementById('rota-resultado').style.display = 'block';
+      document.getElementById('rota-resultado').innerHTML = `
+        <div style="background:var(--green-dim);border:1px solid rgba(0,229,119,0.2);border-radius:var(--radius-sm);padding:16px">
+          <div style="font-size:13px;color:var(--green);font-weight:600;margin-bottom:8px">✅ Rota encontrada</div>
+          <div class="info-row"><span class="info-key">Distância</span><span class="info-val" style="color:var(--green)">${rotaKm} km</span></div>
+          <div class="info-row"><span class="info-key">Tempo estimado</span><span class="info-val">${horas}h ${mins}min</span></div>
+        </div>`;
+    } else throw new Error('Rota não encontrada');
+  } catch(e) {
+    try {
+      rotaKm = Math.round(await estimarDistancia(origem, destino));
+      document.getElementById('rota-resultado').style.display = 'block';
+      document.getElementById('rota-resultado').innerHTML = `
+        <div style="background:var(--amber-dim);border:1px solid rgba(255,184,0,0.2);border-radius:var(--radius-sm);padding:16px">
+          <div style="font-size:13px;color:var(--amber);font-weight:600;margin-bottom:8px">⚠️ Distância estimada (linha reta × 1.3)</div>
+          <div class="info-row"><span class="info-key">Aprox.</span><span class="info-val">${rotaKm} km</span></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px">Para mais precisão, informe o km manualmente.</div>
+        </div>`;
+    } catch(e2) { showToast('Erro ao calcular rota. Use a aba Manual.', 'error'); }
+  }
+  btn.innerHTML = '🗺️ Buscar Rota e Distância';
+  btn.disabled = false;
+}
+
+async function geocode(local) {
+  const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(local)}&format=json&limit=1`);
+  const d = await r.json();
+  if (!d.length) throw new Error('Local não encontrado: ' + local);
+  return [parseFloat(d[0].lon), parseFloat(d[0].lat)];
+}
+
+async function estimarDistancia(origem, destino) {
+  const [oLon, oLat] = await geocode(origem);
+  const [dLon, dLat] = await geocode(destino);
+  const R = 6371;
+  const dLat2 = (dLat - oLat) * Math.PI / 180;
+  const dLon2 = (dLon - oLon) * Math.PI / 180;
+  const a = Math.sin(dLat2/2)**2 + Math.cos(oLat*Math.PI/180)*Math.cos(dLat*Math.PI/180)*Math.sin(dLon2/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) * 1.3;
+}
+
+// ═══════════════════════════════════
+// HISTÓRICO
+// ═══════════════════════════════════
+function renderHistorico(lista) {
+  const arr = lista || viagens;
+  const wrap = document.getElementById('historico-wrap');
+  const btnLimpar = document.getElementById('btn-limpar');
+  if (!arr.length) {
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">${lista ? 'Nenhum resultado' : 'Nenhuma viagem ainda'}</div></div>`;
+    btnLimpar.style.display = 'none';
+    return;
+  }
+  if (!lista) btnLimpar.style.display = 'inline-flex';
+  const rows = arr.map(v => `
+    <tr>
+      <td>${v.data}</td>
+      <td><div style="font-weight:500">${v.origem}</div><div style="font-size:12px;color:var(--text2)">→ ${v.destino}</div></td>
+      <td>${v.km} km</td>
+      <td>${fmtBRL(v.valor)}</td>
+      <td style="color:${v.lucro>=0?'var(--green)':'var(--red)'};font-weight:600">${fmtBRL(v.lucro)}</td>
+      <td><span class="badge badge-${v.status==='good'?'green':v.status==='bad'?'red':'amber'}">${v.margem.toFixed(1)}%</span></td>
+      <td><button class="btn btn-danger" style="font-size:11px;padding:4px 10px" onclick="removerViagem(${v.id})">✕</button></td>
+    </tr>`).join('');
+  wrap.innerHTML = `
+    <table class="history-table">
+      <thead><tr><th>Data</th><th>Rota</th><th>KM</th><th>Frete</th><th>Lucro</th><th>Margem</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function filterHistorico(query) {
+  const q = query.toLowerCase().trim();
+  if (!q) { renderHistorico(); return; }
+  const filtered = viagens.filter(v =>
+    v.origem.toLowerCase().includes(q) ||
+    v.destino.toLowerCase().includes(q) ||
+    (v.desc || '').toLowerCase().includes(q)
+  );
+  renderHistorico(filtered);
+}
+
+function removerViagem(id) {
+  viagens = viagens.filter(v => v.id !== id);
+  salvarViagens(); renderHistorico(); atualizarInicio();
+  showToast('Viagem removida', 'error');
+}
+
+function limparHistorico() {
+  if (!confirm('Apagar todo o histórico?')) return;
+  viagens = []; salvarViagens(); renderHistorico(); atualizarInicio();
+}
+
+// ═══════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════
+function atualizarDashboard() {
+  const s = calcStats();
+  document.getElementById('d-faturado').textContent = fmtBRL(s.faturado);
+  document.getElementById('d-lucro').textContent    = fmtBRL(s.lucro);
+  document.getElementById('d-custo').textContent    = fmtBRL(s.custo);
+  document.getElementById('d-margem').textContent   = s.faturado > 0 ? (s.lucro/s.faturado*100).toFixed(1)+'%' : '0%';
+  renderChart(); renderInsights(s); renderTopViagens();
+}
+
+function renderChart() {
+  const el = document.getElementById('chart-lucros');
+  if (!viagens.length) { el.innerHTML = '<div class="empty-state" style="width:100%"><div class="empty-icon" style="font-size:32px">📊</div><div class="empty-title" style="font-size:14px">Sem dados</div></div>'; return; }
+  const last8 = viagens.slice(0,8).reverse();
+  const max = Math.max(...last8.map(v => Math.abs(v.lucro)), 1);
+  el.innerHTML = last8.map(v => {
+    const pct = Math.abs(v.lucro)/max*100;
+    const cor = v.lucro >= 0 ? 'var(--green)' : 'var(--red)';
+    return `<div class="chart-bar-wrap">
+      <div class="chart-bar-val">${fmtBRLShort(v.lucro)}</div>
+      <div class="chart-bar" style="height:${pct}%;background:${cor}" title="${v.origem}→${v.destino}: ${fmtBRL(v.lucro)}"></div>
+      <div class="chart-bar-label">${v.origem.substring(0,3).toUpperCase()}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderInsights(stats) {
+  const el = document.getElementById('insights-wrap');
+  if (viagens.length < 2) { el.innerHTML = '<div style="padding:30px 0;text-align:center;color:var(--text3);font-size:13px">Faça mais viagens para ver insights</div>'; return; }
+  const boas  = viagens.filter(v => v.status === 'good').length;
+  const ruins = viagens.filter(v => v.status === 'bad').length;
+  const kmTotal = viagens.reduce((s,v) => s+v.km, 0);
+  const melhor  = viagens.reduce((a,b) => a.lucro > b.lucro ? a : b);
+  el.innerHTML = `
+    <div class="info-row"><span class="info-key">Viagens lucrativas</span><span class="info-val" style="color:var(--green)">${boas} de ${viagens.length}</span></div>
+    <div class="info-row"><span class="info-key">Com prejuízo</span><span class="info-val" style="color:var(--red)">${ruins}</span></div>
+    <div class="info-row"><span class="info-key">KM total rodado</span><span class="info-val">${kmTotal.toLocaleString('pt-BR')} km</span></div>
+    <div class="info-row"><span class="info-key">Melhor viagem</span><span class="info-val" style="color:var(--green)">${fmtBRL(melhor.lucro)}</span></div>
+    <div class="info-row"><span class="info-key">Taxa de sucesso</span><span class="info-val">${((boas/viagens.length)*100).toFixed(0)}%</span></div>`;
+}
+
+function renderTopViagens() {
+  const el = document.getElementById('top-viagens');
+  if (!viagens.length) { el.innerHTML = '<div class="empty-state" style="padding:30px"><div class="empty-title" style="font-size:14px">Sem dados</div></div>'; return; }
+  const top = [...viagens].sort((a,b) => b.lucro-a.lucro).slice(0,5);
+  el.innerHTML = `<table class="history-table">
+    <thead><tr><th>#</th><th>Data</th><th>Rota</th><th>KM</th><th>Frete</th><th>Lucro</th></tr></thead>
+    <tbody>${top.map((v,i) => `<tr>
+      <td><span style="font-family:var(--font-head);color:var(--text3)">#${i+1}</span></td>
+      <td>${v.data}</td><td>${v.origem} → ${v.destino}</td><td>${v.km} km</td>
+      <td>${fmtBRL(v.valor)}</td>
+      <td style="color:${v.lucro>=0?'var(--green)':'var(--red)'};font-weight:600">${fmtBRL(v.lucro)}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+// ═══════════════════════════════════
+// INÍCIO
+// ═══════════════════════════════════
+function atualizarInicio() {
+  const s = calcStats();
+  document.getElementById('s-faturado').textContent = fmtBRL(s.faturado);
+  document.getElementById('s-lucro').textContent    = fmtBRL(s.lucro);
+  document.getElementById('s-viagens').textContent  = s.count;
+  document.getElementById('s-media').textContent    = fmtBRL(s.media);
+  const uw = document.getElementById('ultima-viagem-wrap');
+  if (viagens.length > 0) {
+    uw.style.display = 'block';
+    const v = viagens[0];
+    document.getElementById('ultima-viagem-card').innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-family:var(--font-head);font-size:18px;font-weight:700">${v.origem} → ${v.destino}</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:4px">${v.data} • ${v.km} km • ${fmtBRL(v.valor)}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:var(--font-head);font-size:24px;font-weight:800;color:${v.lucro>=0?'var(--green)':'var(--red)'}">${fmtBRL(v.lucro)}</div>
+          <div style="font-size:12px;color:var(--text2)">${v.margem.toFixed(1)}% de margem</div>
+        </div>
+      </div>`;
+  } else { uw.style.display = 'none'; }
+}
+
+// ═══════════════════════════════════
+// ASSISTENTE IA
+// ═══════════════════════════════════
+function atualizarAnalise() {
+  const el = document.getElementById('ia-analise-content');
+  if (!viagens.length) { el.innerHTML = '<div style="font-size:13px;color:var(--text3)">Faça viagens para gerar análises.</div>'; return; }
+  const s    = calcStats();
+  const boas = viagens.filter(v => v.status === 'good').length;
+  const cor  = s.margem >= 25 ? 'var(--green)' : s.margem >= 10 ? 'var(--amber)' : 'var(--red)';
+  const avaliacao = s.margem >= 25 ? 'Negócio saudável! 💪' : s.margem >= 10 ? 'Margem pode melhorar' : 'Atenção nos custos!';
+  el.innerHTML = `
+    <div style="text-align:center;margin-bottom:16px">
+      <div class="score-num" style="color:${cor}">${s.margem.toFixed(0)}%</div>
+      <div class="score-label">${avaliacao}</div>
+    </div>
+    <div class="info-row"><span class="info-key">Taxa de sucesso</span><span class="info-val">${((boas/viagens.length)*100).toFixed(0)}%</span></div>
+    <div class="info-row"><span class="info-key">Faturamento</span><span class="info-val">${fmtBRL(s.faturado)}</span></div>
+    <div style="margin-top:14px">
+      <button class="btn btn-secondary btn-full" style="font-size:13px" onclick="perguntarIA('Analise meu desempenho: ${viagens.length} viagens, faturei ${fmtBRL ? '' : ''}R$, lucro total, margem média ${s.margem.toFixed(1)}%. O que posso melhorar?')">🤖 Pedir análise detalhada ↗</button>
+    </div>`;
+}
+
+async function enviarMensagem() {
+  const input  = document.getElementById('ai-input');
+  const texto  = input.value.trim();
+  if (!texto) return;
+  input.value  = '';
+  addMsgUI(texto, 'user');
+  document.getElementById('ai-typing-indicator').style.display = 'flex';
+  const s   = calcStats();
+  const ctx = viagens.length > 0 ? `\n\nContexto: ${viagens.length} viagens, faturado R$${s.faturado.toFixed(0)}, lucro R$${s.lucro.toFixed(0)}, margem ${s.margem.toFixed(1)}%.` : '';
+  aiHistory.push({ role:'user', content: texto });
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: 'Você é o assistente especialista do Micokrovix para caminhoneiros e motoristas autônomos brasileiros. Seja direto, prático e use português informal mas profissional. Foco em fretes, custos, lucro, negociação, economia de combustível.' + ctx,
+        messages: aiHistory.slice(-10)
+      })
+    });
+    const data     = await resp.json();
+    const resposta = data.content?.map(b => b.text||'').join('\n') || 'Erro ao processar.';
+    aiHistory.push({ role:'assistant', content: resposta });
+    localStorage.setItem('micokrovix-ai', JSON.stringify(aiHistory.slice(-50)));
+    document.getElementById('ai-typing-indicator').style.display = 'none';
+    addMsgUI(resposta, 'assistant');
+  } catch(e) {
+    document.getElementById('ai-typing-indicator').style.display = 'none';
+    const fallback = gerarRespostaLocal(texto);
+    aiHistory.push({ role:'assistant', content: fallback });
+    addMsgUI(fallback, 'assistant');
+  }
+  document.getElementById('ai-messages').scrollTop = 9999;
+}
+
+function gerarRespostaLocal(p) {
+  p = p.toLowerCase();
+  if (p.includes('lucro') || p.includes('ganho'))         return '💡 Para aumentar o lucro: negocie sempre acima do custo + 30%, evite retorno vazio, controle consumo de combustível.';
+  if (p.includes('combustível') || p.includes('diesel'))  return '⛽ Economize: mantenha 80-90 km/h, calibre pneus semanalmente, use freio motor, evite acelerações bruscas.';
+  if (p.includes('preço') || p.includes('mínimo'))        return '🧮 Preço mínimo = (km × custo/km) + margem desejada. Recomendamos ao menos 25-30% de margem.';
+  if (p.includes('negoci'))                               return '🤝 Para negociar: conheça seu custo antes, ofereça prazo e segurança, tenha um "não" preparado.';
+  return '🤖 Estou aqui para ajudar com fretes e logística! Pergunte sobre custos, margem, negociação ou combustível.';
+}
+
+function perguntarIA(texto) {
+  document.getElementById('ai-input').value = texto;
+  enviarMensagem();
+  showPage('assistente');
+}
+
+function addMsgUI(texto, role) {
+  const msgs = document.getElementById('ai-messages');
+  const div  = document.createElement('div');
+  div.className = 'ai-msg-row';
+  div.style.flexDirection = role === 'user' ? 'row-reverse' : 'row';
+  div.innerHTML = `
+    <div class="ai-icon" style="background:${role==='user'?'var(--blue-dim)':'var(--green-dim)'};color:${role==='user'?'var(--blue)':'var(--green)'}">${role==='user'?'👤':'🤖'}</div>
+    <div class="ai-msg ${role}" style="max-width:85%">${texto.replace(/\n/g,'<br>')}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = 9999;
+}
+
+// ═══════════════════════════════════
+// CONFIGURAÇÕES
+// ═══════════════════════════════════
+function salvarConfig() {
+  config = {
+    consumo:    parseFloat(document.getElementById('cfg-consumo').value)    || 0,
+    combustivel:parseFloat(document.getElementById('cfg-combustivel').value) || 0,
+    custoKm:    parseFloat(document.getElementById('cfg-custo-km').value)   || 0,
+    nome:       document.getElementById('cfg-nome').value || ''
+  };
+  localStorage.setItem('micokrovix-config', JSON.stringify(config));
+  atualizarConfigDisplay();
+  showToast('Configurações salvas! ✅', 'success');
+}
+
+function carregarConfig() {
+  if (config.consumo)     document.getElementById('cfg-consumo').value     = config.consumo;
+  if (config.combustivel) document.getElementById('cfg-combustivel').value  = config.combustivel;
+  if (config.custoKm)     document.getElementById('cfg-custo-km').value    = config.custoKm;
+  if (config.nome)        document.getElementById('cfg-nome').value         = config.nome;
+}
+
+function atualizarConfigDisplay() {
+  document.getElementById('cfg-consumo-display').textContent = config.consumo    ? config.consumo + ' km/l'                    : '— km/l';
+  document.getElementById('cfg-comb-display').textContent    = config.combustivel? 'R$ '+config.combustivel.toFixed(2)+'/l'    : '— R$/l';
+  if (config.consumo    && !document.getElementById('f-consumo').value)    document.getElementById('f-consumo').value    = config.consumo;
+  if (config.combustivel && !document.getElementById('f-combustivel').value) document.getElementById('f-combustivel').value = config.combustivel;
+}
+
+function exportarDados() {
+  if (!viagens.length) { showToast('Sem dados para exportar', 'error'); return; }
+  const data = new Date().toISOString().split('T')[0];
+  const cols = ['Data','Origem','Destino','KM','Valor Frete','Custo Combustivel','Custo Total','Lucro','Margem %'];
+  const rows = viagens.map(v => [v.data, `"${v.origem}"`, `"${v.destino}"`, v.km, v.valor.toFixed(2), v.custoCombustivel.toFixed(2), v.custoTotal.toFixed(2), v.lucro.toFixed(2), v.margem.toFixed(1)]);
+  const csv  = [cols, ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `micokrovix-${data}.csv`; a.click();
+  showToast('CSV exportado! 📤', 'success');
+}
+
+function limparTudo() {
+  viagens = []; config = {};
+  localStorage.removeItem('micokrovix-viagens');
+  localStorage.removeItem('micokrovix-config');
+  localStorage.removeItem('micokrovix-ai');
+  atualizarInicio();
+  showToast('Dados apagados', 'error');
+}
+
+// ═══════════════════════════════════
+// UTILITÁRIOS
+// ═══════════════════════════════════
+function salvarViagens() { localStorage.setItem('micokrovix-viagens', JSON.stringify(viagens)); }
+
+function calcStats() {
+  const faturado = viagens.reduce((s,v) => s+v.valor, 0);
+  const lucro    = viagens.reduce((s,v) => s+v.lucro, 0);
+  const custo    = viagens.reduce((s,v) => s+v.custoTotal, 0);
+  const count    = viagens.length;
+  const media    = count ? lucro/count : 0;
+  const margem   = faturado > 0 ? (lucro/faturado)*100 : 0;
+  return { faturado, lucro, custo, count, media, margem };
+}
+
+function fmtBRL(v) {
+  return v.toLocaleString('pt-BR', { style:'currency', currency:'BRL', minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+
+function fmtBRLShort(v) {
+  if (Math.abs(v) >= 1000) return (v>=0?'':'-') + 'R$' + (Math.abs(v)/1000).toFixed(1) + 'k';
+  return (v>=0?'':'-') + 'R$' + Math.abs(v).toFixed(0);
+}
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.innerHTML = `<span>${type==='success'?'✅':'❌'}</span> ${msg}`;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.className = 'toast', 3500);
+}
+
+// ═══════════════════════════════════
+// INICIALIZAÇÃO
+// ═══════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  atualizarInicio();
+  atualizarConfigDisplay();
+  if (config.consumo)     document.getElementById('f-consumo').value     = config.consumo;
+  if (config.combustivel) document.getElementById('f-combustivel').value = config.combustivel;
+});
+</script>
+</body>
+</html>
